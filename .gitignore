@@ -1,0 +1,8 @@
+WebContent/WEB-INF/classes/
+*.log
+*.swp
+*.swo
+WebContent/data/
+WebContent/results/
+text_data/
+
