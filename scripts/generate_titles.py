@@ -2,6 +2,7 @@ import argparse
 import json
 import os
 import multiprocessing as mp
+import logging
 
 
 def json_to_posting_title(posting_json_path):

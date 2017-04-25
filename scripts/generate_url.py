@@ -2,6 +2,7 @@ import argparse
 import json
 import os
 import multiprocessing as mp
+import logging
 
 
 def worker_init(corpus_name):

@@ -2,6 +2,7 @@ import argparse
 import json
 import os
 import multiprocessing as mp
+import logging
 
 def worker_init(inpath_in, outpath_in):
     global inpath

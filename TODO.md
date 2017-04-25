@@ -3,3 +3,5 @@
 1. mvnize 
 1. make configurable (fix Constants.java)
 1. elasticsearch backend?
+1. include brand in posting title
+
