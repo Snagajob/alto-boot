@@ -7,4 +7,4 @@ mkdir WebContent/WEB-INF/classes
 javac -cp WebContent/WEB-INF/lib/*:$TOMCAT/* src/*/*.java -d WebContent/WEB-INF/classes
 cp -r WebContent $TOMCAT/webapps/
 mv $TOMCAT/webapps/WebContent $TOMCAT/webapps/alto-release
-$TOMCAT/bin/catalina.sh start
+#$TOMCAT/bin/catalina.sh start

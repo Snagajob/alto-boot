@@ -17,8 +17,6 @@ import java.util.TreeMap;
 import util.GenerateVocab;
 import javax.servlet.http.HttpServletRequest;
 
-import alto.ErrorForUI;
-import alto.Featurizer;
 import util.*;
 
 
@@ -34,11 +32,9 @@ public class TopicModeling {
 	String outputName;
 	String vocabFile;
 	String featureFileDir;
-	String removedFile;
 	String urlFile;
 	String summaryFile;
 
-	int docLen;
 	String absInputDir;
 	String absOutputName;
 	String absOutputDir;
@@ -84,6 +80,7 @@ public class TopicModeling {
 		this.featureFileDir = this.baseDir+util.Constants.CORPUS_NAME + "/output/T"+util.Constants.NUM_TOPICS+"/init/"+util.Constants.CORPUS_NAME+".feat";
 		loadFeatures(features, req);
 		loadTopicProbs(docIdToHighestTopic, highestDocs, topicToDocs, req);
+		System.out.println("data initialized...");
 	}
 
 	public class DocProb implements Comparable<Object> {
@@ -312,6 +309,8 @@ public class TopicModeling {
 	
 		return docJson;
 	}
+
+
 	public void loadDocSummaries(HttpServletRequest req, HashMap<String, String> idToSummary) throws IOException{
 		//String json = "\"doc_summaries\":[";
 		BufferedReader breader;
@@ -319,9 +318,14 @@ public class TopicModeling {
 		String strLine;
 		while ((strLine = breader.readLine()) != null) {
 			String[] items = strLine.trim().split("#");
-			idToSummary.put(items[0], items[1]);
+			try {
+				idToSummary.put(items[0], items[1]);
+			} catch(Exception e) {
+				System.out.println(items.toString());
+			}
 		}
 	}
+
 	public void writeAllInitialTopDocsToFile() throws ErrorForUI, IOException {
 		// writes shuffled initial top docs to file for baseline to load
 		String f = this.absOutputDir+"/shuffledTopDocs.txt";
@@ -376,6 +380,8 @@ public class TopicModeling {
 
 	public void loadTopicProbs(HashMap<String, ArrayList<String>> docIdToHighestTopic, HashMap<String, ArrayList<String>> highestDocs,
 			HashMap<String, ArrayList<DocProb>> topicToDocs, HttpServletRequest req) throws NumberFormatException, IOException{
+
+        System.out.print("loading topic probs...");
 		//reads the model.doc file and loads doc to highest <topic,prob>
 		for(int i = 0 ; i < util.Constants.NUM_TOPICS; i++){
 			ArrayList<DocProb> docs = new ArrayList<DocProb>();

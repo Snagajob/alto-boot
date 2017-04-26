@@ -5,4 +5,7 @@ WebContent/WEB-INF/classes/
 WebContent/data/
 WebContent/results/
 text_data/
+.DS_Store
+.idea
+*.pkl
 

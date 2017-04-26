@@ -30,6 +30,11 @@ public class Featurizer{
 	public HashMap<String, Integer> vocabToIndex = new HashMap<String,Integer>();
 	public TreeMap<Integer, String> indexToVocab = new TreeMap<Integer, String>();
 
+	public static void main(String[] args) throws IOException{
+	    Featurizer ff = new Featurizer();
+	    ff.featurize();
+    }
+
 	public void featurize() throws IOException{
 		String featuresDir = baseDir+"results/"+util.Constants.CORPUS_NAME + "/output/T"+
 	String.valueOf(util.Constants.NUM_TOPICS)+"/init/"+util.Constants.CORPUS_NAME+".feat";
@@ -43,6 +48,7 @@ public class Featurizer{
 		getData();
 		fillVocab();
 		if(ids.size() == 0){
+            fillDocIdToTopicProbMap(docIdToTopicProb);
 			//getting doc ids
 			String dir = util.Constants.TEXT_DATA_DIR;
 
@@ -120,7 +126,7 @@ public class Featurizer{
 		int numWordsFeatures = 0;
 		numWordsFeatures = vocabToIndex.keySet().size();
 
-		fillDocIdToTopicProbMap(docIdToTopicProb);
+		//fillDocIdToTopicProbMap(docIdToTopicProb);
 
 		String line="";
 		line = line + id + " ";
