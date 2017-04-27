@@ -1,7 +1,8 @@
 CORPUS=$1
 BASEDIR=$2
 ## POSTING_JSON_PATH=$3 dedup/data/json/
-POSTING_JSON_PATH=/Users/robert.mealey/match.topical/dedup/data/json/
+##POSTING_JSON_PATH=/Users/robert.mealey/match.topical/dedup/data/json/
+POSTING_JSON_PATH=/home/ubuntu/data/mongo_dumps/
 NUMTOPICS=$3
 SUBSET=$4
 
@@ -14,18 +15,19 @@ mkdir ${BASEDIR}/WebContent/results/${CORPUS}/output/
 mkdir ${BASEDIR}/WebContent/results/${CORPUS}/output/T${NUMTOPICS}/
 mkdir ${BASEDIR}/WebContent/results/${CORPUS}/output/T${NUMTOPICS}/init/
 
-python scripts/generate_text_data.py --subset $SUBSET ${POSTING_JSON_PATH} ${TEXTDATAPATH}
-python scripts/generate_html.py --subset $SUBSET ${POSTING_JSON_PATH} WebContent/data/${CORPUS}.html
-python scripts/generate_titles.py --subset $SUBSET ${POSTING_JSON_PATH} WebContent/data/${CORPUS}.titles
-python scripts/generate_url.py --subset $SUBSET $CORPUS ${POSTING_JSON_PATH} ${INPUTPATH}/${CORPUS}.url
+python scripts/generate_text_data.py --subset $SUBSET ${POSTING_JSON_PATH} ${TEXTDATAPATH} &
+python scripts/generate_html.py --subset $SUBSET ${POSTING_JSON_PATH} WebContent/data/${CORPUS}.html &
+python scripts/generate_titles.py --subset $SUBSET ${POSTING_JSON_PATH} WebContent/data/${CORPUS}.titles &
+python scripts/generate_url.py --subset $SUBSET $CORPUS ${POSTING_JSON_PATH} ${INPUTPATH}/${CORPUS}.url &
+wait
 
-../tree-tm/bin/mallet import-dir \
+$HOME/tree-TM/bin/mallet import-dir \
     --input $BASEDIR/text_data/$CORPUS \
     --output $BASEDIR/WebContent/results/$CORPUS/input/$CORPUS-topic-input.mallet \
     --remove-stopwords \
     --keep-sequence
 
-../tree-tm/bin/mallet train-topics \
+$HOME/tree-TM/bin/mallet train-topics \
     --input $BASEDIR/WebContent/results/$CORPUS/input/$CORPUS-topic-input.mallet \
     --num-topics $NUMTOPICS \
     --topic-word-weights-file \

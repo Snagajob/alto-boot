@@ -9,7 +9,7 @@ from sklearn.externals import joblib
 def json_to_posting_title(posting_json_path):
     with open(posting_json_path, "r") as f:
         posting = json.load(f)
-        posting["data"]["jt"] = posting["data"]["jt"].replace("#", "")
+        posting["data"]["jt"] = posting["data"]["jt"].replace("#", "").replace("\n"," ")
         return '{DIMJOBPOSTINGKEY}#{data[jt]}\n'.format(** posting)
 
 
