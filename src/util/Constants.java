@@ -18,8 +18,8 @@ public class Constants
         */
 
         //*	
- 	public static final String CORPUS_NAME = "postings_small";
-	public static final String TEXT_DATA_DIR = "/home/ubuntu/ALTO-ACL-2016/text_data/postings_small/";
+ 	public static final String CORPUS_NAME = "rare_fextures";
+	public static final String TEXT_DATA_DIR = "/home/ubuntu/ALTO-ACL-2016/text_data/rare_fextures/";
 	public static final int NUM_TOPICS = 10;
         //*/
 }

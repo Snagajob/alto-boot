@@ -4,43 +4,75 @@ import os
 import multiprocessing as mp
 import logging
 from sklearn.externals import joblib
+from pymongo import MongoClient
+import html2text
+import re
+import signal
 
-def worker_init(inpath_in, outpath_in):
-    global inpath
+def worker_init(outpath_in, mongo_host):
+    global header_pattern
+    global newline_pattern
+    header_pattern = re.compile("(^|\n)#{1,}\s+")
+    newline_pattern = re.compile("\n\s+\n")
+
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
     global outpath
-    inpath = inpath_in
+    global client
     outpath = outpath_in
-    
-
-def json_to_corpus_text(posting_json_path):
-    with open(posting_json_path, "r") as f:
-        posting = json.load(f)
-    with open("{}/{}".format(outpath, posting["DIMJOBPOSTINGKEY"]), "w") as f:
-            f.write(posting["data"]["topo"])
+    client = MongoClient(host=mongo_host)
 
 
-def crawl_dir(dir_to_crawl, doc_set=set(), n=-1):
-    i = 0;
-    for dirpath, _, filenames in os.walk(dir_to_crawl):
-        for f in filenames:
-            if any([len(doc_set)==0, f.replace(".json","") in doc_set]): 
-                i = i + 1
-                if i%10000==0:
-                    logging.info("loaded {} postings".format(i))
-                if all([n>0, i==n]):
-                    raise StopIteration
-                yield os.path.abspath(os.path.join(dirpath, f))
+def scrub(text):
+    text = text.replace("part time", "part-time")
+    text = text.replace("full time", "full-time")
+    text = text.replace("parttime", "part-time")
+    text = text.replace("fulltime", "full-time")
+    text = text.replace("full-time/part-time", "full-time or part-time ")
+    text = text.replace("part-time/full-time", "full-time or part-time ")
+    text = re.sub(header_pattern, "\n\n", text)
+    text = re.sub(newline_pattern, "\n\n", text)
+    return text
+
+
+def json_to_corpus_text(posting_id):
+    h2t = html2text.HTML2Text()
+    h2t.ignore_links = True
+    h2t.ignore_images = True
+    h2t.ignore_emphasis = True
+    h2t.ingore_anchors = True
+    h2t.ul_item_mark = "-"
+
+    posting = client.get_database("posting").get_collection("posting").find_one(
+                {"_id":"{}".format(posting_id)},
+                {"po":1}
+            )
+
+    with open("{}/{}".format(outpath, posting["_id"]), "w") as f:
+            f.write(scrub(h2t.handle(posting["po"])))
 
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("inpath")
+    parser.add_argument("sample_ids_path")
+    parser.add_argument("mongo_pw")
     parser.add_argument("outpath")
-    parser.add_argument("--subset", type=int, default=-1)
     args = parser.parse_args()
-    uniq_local_postings = {str(p) for p in joblib.load("uniq_local_postings.pkl")}
-    with mp.Pool(mp.cpu_count(), worker_init, (args.inpath, args.outpath)) as pool:
-        pool.map(json_to_corpus_text, crawl_dir(args.inpath, doc_set=uniq_local_postings, n=args.subset))
+
+    mongo_host = "mongodb://{user}:{password}@{host}:{port}/{database}".format(
+            user="adhoc",
+            password=args.mongo_pw,
+            host="mgoinf.snagprod.corp",
+            port="27310",
+            database="posting"
+    )
+
+    uniq_local_postings = {str(p) for p in joblib.load(args.sample_ids_path)}
+    with mp.Pool(mp.cpu_count(), worker_init, (args.outpath, mongo_host,)) as pool:
+        try:
+            pool.map(json_to_corpus_text, uniq_local_postings)
+        except KeyboardInterrupt:
+            pool.terminate()
+
 
 

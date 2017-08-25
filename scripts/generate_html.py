@@ -4,6 +4,8 @@ import os
 import multiprocessing as mp
 import logging
 from sklearn.externals import joblib
+import signal
+from pymongo import MongoClient
 
 head = """
 <html>
@@ -27,9 +29,9 @@ head = """
 """
 
 posting_templ = """
-<div class="segment" id="{DIMJOBPOSTINGKEY}">
+<div class="segment" id="{_id}">
 <p>
-{data[topo]}
+{po}
 </p>
 </div>
 """
@@ -43,38 +45,41 @@ tail = """
 </html>
 """
 
+def worker_init(mongo_host):
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
+    global client
+    client = MongoClient(host=mongo_host)
 
 
-def json_to_posting_html(posting_json_path):
-    with open(posting_json_path, "r") as f:
-        posting = json.load(f)
-        return posting_templ.format(** posting)
-
-
-def crawl_dir(dir_to_crawl, doc_set=set(), n=-1):
-    i = 0;
-    for dirpath, _, filenames in os.walk(dir_to_crawl):
-        for f in filenames:
-            if any([len(doc_set)==0, f.replace(".json","") in doc_set]):
-                i = i + 1
-                if i%10000==0:
-                    logging.info("loaded {} postings".format(i))
-                if all([n>0, i==n]):
-                    raise StopIteration
-                yield os.path.abspath(os.path.join(dirpath, f))
+def json_to_posting_html(posting_id):
+    posting = client.get_database("posting").get_collection("posting").find_one(
+                {"_id":"{}".format(posting_id)},
+                {"po":1}
+            )
+    return posting_templ.format(** posting)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("inpath")
+    parser.add_argument("sample_ids_path")
+    parser.add_argument("mongo_pw")
     parser.add_argument("outpath")
-    parser.add_argument("--subset", type=int, default=-1)
     args = parser.parse_args()
-    uniq_local_postings = {str(p) for p in joblib.load("uniq_local_postings.pkl")}
-    with mp.Pool(mp.cpu_count()) as pool:
+
+    uniq_local_postings = {str(p) for p in joblib.load(args.sample_ids_path)}
+
+    mongo_host = "mongodb://{user}:{password}@{host}:{port}/{database}".format(
+            user="adhoc",
+            password=args.mongo_pw,
+            host="mgoinf.snagprod.corp",
+            port="27310",
+            database="posting"
+    )
+
+    with mp.Pool(mp.cpu_count(), worker_init, (mongo_host,)) as pool:
         with open(args.outpath, "w") as f:
             f.write(head)
-            for phtml in pool.imap(json_to_posting_html, crawl_dir(args.inpath, doc_set=uniq_local_postings, n=args.subset)):
+            for phtml in pool.imap(json_to_posting_html, uniq_local_postings):
                 f.write(phtml)
             f.write(tail)
 
