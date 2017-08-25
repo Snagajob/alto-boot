@@ -1,19 +1,24 @@
 CORPUS=$1
 BASEDIR=$2
-## POSTING_JSON_PATH=$3 dedup/data/json/
-##POSTING_JSON_PATH=/Users/robert.mealey/match.topical/dedup/data/json/
-POSTING_JSON_PATH=/home/ubuntu/data/mongo_dumps/
+POSTING_JSON_PATH=/Users/robert.mealey/match.topical/dedup/data/json/
+##POSTING_JSON_PATH=/home/ubuntu/data/mongo_dumps/
 NUMTOPICS=$3
 SUBSET=$4
 
 TEXTDATAPATH="$BASEDIR/text_data/$CORPUS"
+rm -r $TEXTDATAPATH
 mkdir $TEXTDATAPATH
+rm -r ${BASEDIR}/WebContent/results/${CORPUS}
 mkdir ${BASEDIR}/WebContent/results/${CORPUS}
 INPUTPATH="${BASEDIR}/WebContent/results/${CORPUS}/input/"
 mkdir $INPUTPATH
 mkdir ${BASEDIR}/WebContent/results/${CORPUS}/output/
 mkdir ${BASEDIR}/WebContent/results/${CORPUS}/output/T${NUMTOPICS}/
 mkdir ${BASEDIR}/WebContent/results/${CORPUS}/output/T${NUMTOPICS}/init/
+
+rm WebContent/data/${CORPUS}.html
+rm WebContent/data/${CORPUS}.titles 
+rm ${INPUTPATH}/${CORPUS}.url 
 
 python scripts/generate_text_data.py --subset $SUBSET ${POSTING_JSON_PATH} ${TEXTDATAPATH} &
 python scripts/generate_html.py --subset $SUBSET ${POSTING_JSON_PATH} WebContent/data/${CORPUS}.html &

@@ -1,5 +1,6 @@
 BASEDIR="${HOME}/ALTO-ACL-2016"
-TOMCAT="${HOME}/apache-tomcat-6.0.53/"
+#TOMCAT="${HOME}/apache-tomcat-6.0.53/"
+TOMCAT="${HOME}/apache-tomcat-6.0.48/"
 cd $BASEDIR
 rm -r ${BASEDIR}/WebContent/WEB-INF/classes/
 rm -r ${TOMCAT}/webapps/alto-release/
