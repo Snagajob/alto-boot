@@ -41,7 +41,7 @@ public class DataLoader extends HttpServlet {
 		String username = req.getParameter("username");
 		json = Backend.createNewSession(username, req);
 		
-		System.out.println(json);
+		//System.out.println(json);
 		response.setContentType("application/json");
 		response.setCharacterEncoding("UTF-8");
 
