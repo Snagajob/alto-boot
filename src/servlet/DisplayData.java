@@ -20,8 +20,8 @@ public class DisplayData extends HttpServlet{
 	private static ArrayList<String> texts;//keeps doc texts that is displayed
 	private static ArrayList<String> ids;//keeps doc ids 
 	private static final long serialVersionUID = 1L;
-	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
-			throws ServletException, IOException {
+
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		this.baseDir = util.Constants.RESULT_DIR;
 		boolean isLabelDocs = Boolean.parseBoolean(req.getParameter("isLabelDocs"));//TODO:send the parameter
 		String backend = this.baseDir.split("results")[0] + "data/"+util.Constants.CORPUS_NAME+".html";
@@ -67,6 +67,7 @@ public class DisplayData extends HttpServlet{
 
 	public void getData(String inputfile, HttpServletRequest req) throws IOException{
 		//Reads in the html file and fills in data
+        System.out.println(inputfile);
 		
 		texts = new ArrayList<String>();
 		idToIndex = new HashMap<String, Integer>();
