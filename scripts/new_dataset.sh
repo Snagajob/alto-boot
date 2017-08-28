@@ -12,18 +12,20 @@ mkdir ${BASEDIR}/WebContent/results/${CORPUS}
 
 INPUTPATH="${BASEDIR}/WebContent/results/${CORPUS}/input/"
 mkdir $INPUTPATH
+mkdir ${BASEDIR}/WebContent/results/${CORPUS}/log/
 mkdir ${BASEDIR}/WebContent/results/${CORPUS}/output/
 mkdir ${BASEDIR}/WebContent/results/${CORPUS}/output/T${NUMTOPICS}/
 mkdir ${BASEDIR}/WebContent/results/${CORPUS}/output/T${NUMTOPICS}/init/
 
 rm WebContent/data/${CORPUS}.html
 rm WebContent/data/${CORPUS}.titles 
-rm ${INPUTPATH}/${CORPUS}.url 
 
-python scripts/generate_text_data.py ${SAMPLE_IDS_PATH} ${MONGO_PW} ${TEXTDATAPATH} &
-python scripts/generate_html.py ${SAMPLE_IDS_PATH} ${MONGO_PW} WebContent/data/${CORPUS}.html &
-python scripts/generate_titles.py ${SAMPLE_IDS_PATH} ${MONGO_PW} WebContent/data/${CORPUS}.titles &
-python scripts/generate_url.py $CORPUS ${SAMPLE_IDS_PATH} ${INPUTPATH}/${CORPUS}.url &
+python scripts/generate_text_data.py ${SAMPLE_IDS_PATH} ${MONGO_PW} ${TEXTDATAPATH} 
+python scripts/generate_html.py ${SAMPLE_IDS_PATH} ${MONGO_PW} WebContent/data/${CORPUS}.html 
+python scripts/generate_titles.py ${SAMPLE_IDS_PATH} ${MONGO_PW} WebContent/data/${CORPUS}.titles 
+python scripts/generate_url.py $CORPUS ${SAMPLE_IDS_PATH} ${INPUTPATH}/${CORPUS}.url 
+
+ls ${INPUTPATH}
 
 wait
 

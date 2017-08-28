@@ -324,9 +324,11 @@ public class TopicModeling {
 
 	public void writeAllInitialTopDocsToFile() throws ErrorForUI, IOException {
 		// writes shuffled initial top docs to file for baseline to load
+                System.out.println("writeAllInitialTopDocsToFile 1");
 		String f = this.absOutputDir+"/shuffledTopDocs.txt";
 		if(util.Util.checkExist(f))
 			return;
+                System.out.println("writeAllInitialTopDocsToFile 2");
 		Writer writer = null;
 		try {
 			writer = new BufferedWriter(new OutputStreamWriter(
@@ -334,10 +336,13 @@ public class TopicModeling {
 		} catch (IOException ex) {
 			throw new ErrorForUI(ex);
 		} 
+                System.out.println("writeAllInitialTopDocsToFile 3");
 		for(String id:allInitialTopDocs){
 			writer.write(id+"\n");
 		}
+                System.out.println("writeAllInitialTopDocsToFile 4");
 		writer.close();
+                System.out.println("writeAllInitialTopDocsToFile 5");
 	}
 	public String getShuffledDocsJson(HttpServletRequest req) throws IOException{
                 System.out.println("getShuffledDocs 1");
@@ -454,6 +459,8 @@ public class TopicModeling {
 		Featurizer ff = new Featurizer();
 		ff.featurize();
 		System.out.println("loading features...");
+
+                System.out.println(this.featureFileDir);
 
 		BufferedReader br = new BufferedReader(new InputStreamReader(req.getSession().getServletContext().getResourceAsStream("/"+this.featureFileDir)));
 
