@@ -21,8 +21,15 @@ def worker_init(outpath_in, mongo_host):
     outpath = outpath_in
     client = MongoClient(host=mongo_host)
 
+    global stops
+    global noisy_paragraphs
+    stops = load_stopwords("/home/ubuntu/match.nlp/resources/stopwords.lex")
+    noisy_paragraphs = load_stopwords("/home/ubuntu/match.nlp/resources/noisy_paragraphs.lex")
+
 
 def scrub(text):
+    for paragraph in noisy_paragraphs:
+        text = text.replace(paragraph, "")
     text = text.replace("part time", "part-time")
     text = text.replace("full time", "full-time")
     text = text.replace("parttime", "part-time")
@@ -31,7 +38,20 @@ def scrub(text):
     text = text.replace("part-time/full-time", "full-time or part-time ")
     text = re.sub(header_pattern, "\n\n", text)
     text = re.sub(newline_pattern, "\n\n", text)
+    text = text.strip()
     return text
+
+
+def load_stopwords(stopwords_path="./resources/stopwords.lex"):
+    with open(stopwords_path, "r") as f:
+        stopwords = {w.strip("\n") for w in f.readlines()}
+    return stopwords
+
+
+def load_noisy_paragraphs(noisy_paragraphs_path="./resources/noisy_paragraphs.lex"):
+    with open(noisy_paragraphs_path, "r") as f:
+        noisy_paragraphs = {p.strip("\n") for p in f.readlines()}
+    return noisy_paragraphs
 
 
 def json_to_corpus_text(posting_id):
@@ -39,8 +59,9 @@ def json_to_corpus_text(posting_id):
     h2t.ignore_links = True
     h2t.ignore_images = True
     h2t.ignore_emphasis = True
-    h2t.ingore_anchors = True
+    h2t.ignore_anchors = True
     h2t.ul_item_mark = "-"
+    h2t.body_width = 0
 
     posting = client.get_database("posting").get_collection("posting").find_one(
                 {"_id":"{}".format(posting_id)},

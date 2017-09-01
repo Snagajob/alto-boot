@@ -18,11 +18,16 @@ public class Constants
         //*/
 
         /*	
- 	public static final String CORPUS_NAME = "rare_fextures";
-	public static final String TEXT_DATA_DIR = "/home/ubuntu/ALTO-ACL-2016/text_data/rare_fextures/";
-	public static final int NUM_TOPICS = 10;
+ 	public static final String CORPUS_NAME = "partime_fulltime";
+	public static final String TEXT_DATA_DIR = "/home/ubuntu/ALTO-ACL-2016/text_data/partime_fulltime/";
+	public static final int NUM_TOPICS = 5;
         //*/
         //*	
+ 	public static final String CORPUS_NAME = "en_lang_small";
+	public static final String TEXT_DATA_DIR = "/home/ubuntu/ALTO-ACL-2016/text_data/en_lang_small/";
+	public static final int NUM_TOPICS = 20;
+        //*/
+        /*	
  	public static final String CORPUS_NAME = "disjoint_fextures";
 	public static final String TEXT_DATA_DIR = "/home/ubuntu/ALTO-ACL-2016/text_data/disjoint_fextures/";
 	public static final int NUM_TOPICS = 30;

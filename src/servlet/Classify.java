@@ -517,6 +517,8 @@ public class Classify extends HttpServlet {
 		for(String id:sortedIdToUncertainty.keySet()){
 			sortedIds.add(id);
 		}
+                System.out.println(sortedIdToUncertainty);
+                System.out.println(sortedIds);
 		double median = 0;
 		if (sortedIdToUncertainty.keySet().size() % 2 == 1){
 			int middleIndex = (int)Math.floor(sortedIdToUncertainty.keySet().size()/2);
