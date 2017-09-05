@@ -659,14 +659,7 @@ function finishLabeling(){
 	
 	takeFinalLogs();
 	finalClassify();
-	alert("Thanks for participating. Please take the posthoc survey.");
 	window.onbeforeunload = null;
-	if(mainWindow.global_study_condition == TA_CONDITION || mainWindow.global_study_condition == TR_CONDITION){
-		location.href = 'https://docs.google.com/forms/d/1BSRRtQBGOn7e10hoEpI07LP3M5YhQvzFX-FQTbshSvk/viewform?usp=send_form';
-	}
-	else{
-		location.href = 'https://docs.google.com/forms/d/1Iw-1SaaFeIss4x54AUwFAHhvQwyQF4dsNr8Eg3NivWw/viewform?usp=send_form';
-	}
 }
 function shuffle(array) {
 	var currentIndex = array.length, temporaryValue, randomIndex ;
