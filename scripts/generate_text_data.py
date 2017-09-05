@@ -23,8 +23,8 @@ def worker_init(outpath_in, mongo_host):
 
     global stops
     global noisy_paragraphs
-    stops = load_stopwords("/home/ubuntu/match.nlp/resources/stopwords.lex")
-    noisy_paragraphs = load_stopwords("/home/ubuntu/match.nlp/resources/noisy_paragraphs.lex")
+    stops = load_stopwords(os.path.expanduser("~")+"/match.nlp/resources/stopwords.lex")
+    noisy_paragraphs = load_stopwords(os.path.expanduser("~")+"/match.nlp/resources/noisy_paragraphs.lex")
 
 
 def scrub(text):
