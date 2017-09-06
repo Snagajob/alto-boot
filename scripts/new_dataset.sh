@@ -2,7 +2,11 @@ CORPUS=$1
 BASEDIR=$2
 SAMPLE_IDS_PATH=$3
 NUMTOPICS=$4
-MONGO_PW=$5
+MONGO_USER=$5
+MONGO_PW=$6
+MONGO_HOST=$7
+MONGO_PORT=$8
+MONGO_DB=$9
 
 TEXTDATAPATH="$BASEDIR/text_data/$CORPUS"
 rm -r $TEXTDATAPATH
@@ -20,9 +24,12 @@ mkdir ${BASEDIR}/WebContent/results/${CORPUS}/output/T${NUMTOPICS}/init/
 rm WebContent/data/${CORPUS}.html
 rm WebContent/data/${CORPUS}.titles 
 
-python scripts/generate_text_data.py ${SAMPLE_IDS_PATH} ${MONGO_PW} ${TEXTDATAPATH} &
-python scripts/generate_html.py ${SAMPLE_IDS_PATH} ${MONGO_PW} WebContent/data/${CORPUS}.html & 
-python scripts/generate_titles.py ${SAMPLE_IDS_PATH} ${MONGO_PW} WebContent/data/${CORPUS}.titles &
+python scripts/generate_text_data.py ${SAMPLE_IDS_PATH} ${TEXTDATAPATH} \
+    ${MONGO_USER} ${MONGO_PW} ${MONGO_HOST} ${MONGO_PORT} ${MONGO_DB} &
+python scripts/generate_html.py ${SAMPLE_IDS_PATH} WebContent/data/${CORPUS}.html \
+    ${MONGO_USER} ${MONGO_PW} ${MONGO_HOST} ${MONGO_PORT} ${MONGO_DB} &
+python scripts/generate_titles.py ${SAMPLE_IDS_PATH} WebContent/data/${CORPUS}.titles \
+    ${MONGO_USER} ${MONGO_PW} ${MONGO_HOST} ${MONGO_PORT} ${MONGO_DB} &
 python scripts/generate_url.py $CORPUS ${SAMPLE_IDS_PATH} ${INPUTPATH}/${CORPUS}.url &
 
 wait

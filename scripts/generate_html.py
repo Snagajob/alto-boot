@@ -62,19 +62,23 @@ def json_to_posting_html(posting_id):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("sample_ids_path")
-    parser.add_argument("mongo_pw")
     parser.add_argument("outpath")
+    parser.add_argument("mongo_user")
+    parser.add_argument("mongo_pw")
+    parser.add_argument("mongo_host")
+    parser.add_argument("mongo_port")
+    parser.add_argument("mongo_db")
     args = parser.parse_args()
 
-    uniq_local_postings = {str(p) for p in joblib.load(args.sample_ids_path)}
-
     mongo_host = "mongodb://{user}:{password}@{host}:{port}/{database}".format(
-            user="adhoc",
+            user=args.mongo_user,
             password=args.mongo_pw,
-            host="mgoinf.snagprod.corp",
-            port="27310",
-            database="posting"
+            host=args.mongo_host,
+            port=args.mongo_port,
+            database=args.mongo_db
     )
+
+    uniq_local_postings = {str(p) for p in joblib.load(args.sample_ids_path)}
 
     with mp.Pool(mp.cpu_count(), worker_init, (mongo_host,)) as pool:
         with open(args.outpath, "w") as f:
