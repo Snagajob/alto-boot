@@ -1,32 +1,47 @@
 package alto;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
+import java.util.function.Supplier;
 
 //gets a folder of data and outputs the feature file in following format:
 // docid 1:count 2:count ...
 //bag of words + topics
 
+@Component
 public class Featurizer{
 	
 	public String baseDir = util.Constants.ABS_BASE_DIR;
-	public ArrayList<String> ids = new ArrayList<String>();
-	;
-	public TreeMap<String, String> idToTextMap = new TreeMap<String, String>();
-	public TreeMap<String, TreeMap<Integer, Integer>> idToTokenCounts = new TreeMap<String, TreeMap<Integer, Integer>>();
-	public HashMap<String, TreeMap<Integer, Double>> docIdToTopicProb = new HashMap<String, TreeMap<Integer, Double>>();
-	public HashMap<String, Integer> vocabToIndex = new HashMap<String,Integer>();
-	public TreeMap<Integer, String> indexToVocab = new TreeMap<Integer, String>();
+	public ArrayList<String> ids = new ArrayList<>();
+	public TreeMap<String, String> idToTextMap = new TreeMap<>();
+	public TreeMap<String, TreeMap<Integer, Integer>> idToTokenCounts = new TreeMap<>();
+	public HashMap<String, TreeMap<Integer, Double>> docIdToTopicProb = new HashMap<>();
+	public HashMap<String, Integer> vocabToIndex = new HashMap<>();
+	public TreeMap<Integer, String> indexToVocab = new TreeMap<>();
 
-	public void featurize() throws IOException{
-		String featuresDir = baseDir+"results/"+util.Constants.CORPUS_NAME + "/output/T"+
-	String.valueOf(util.Constants.NUM_TOPICS)+"/init/"+util.Constants.CORPUS_NAME+".feat";
+    @Value("${alto.data.base_dir:/usr/local/alto-boot}")
+    String dataDirectory;
 
+    @Value("${alto.data.corpus_name:synthetic}")
+    String corpusName;
+
+    @Value("${alto.data.source_text_dir}")
+    String sourceTextDirectory;
+
+
+
+	public void featurize(String featuresDir) throws IOException{
+
+        //TODO: this should be done as a pre-processing step, so i'm leaving this code largely alone..
 		if(util.Util.checkExist(featuresDir))
 			return;
+
 		Writer writer = null;
 		writer = new BufferedWriter(new OutputStreamWriter(
 				new FileOutputStream(featuresDir), "utf-8"));
@@ -35,7 +50,7 @@ public class Featurizer{
 		fillVocab();
 		if(ids.size() == 0){
 			//getting doc ids
-			String dir = util.Constants.TEXT_DATA_DIR;
+			String dir = this.sourceTextDirectory;
 
 			File folder = new File(dir);
 			File[] listOfFiles = folder.listFiles();

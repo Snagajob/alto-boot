@@ -1,17 +1,32 @@
 package alto;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import util.*;
 import util.GenerateVocab;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import java.io.*;
 import java.util.*;
 
 
+@Component
 public class TopicModeling {
-	String baseDir;
+
+    @Value("${alto.data.corpus_name:synthetic}")
+    String corpusName;
+
+    @Value("${alto.data.base_dir:/usr/local/alto-boot}")
+    String dataDirectory;
+
+	@Value("${alto.data.words_per_topic:20}")
 	int wordsNumPerTopic;
+
+	@Value("${alto.data.top_docs_per_topic:20}")
 	int docsNumPerTopic;
+
+	String baseDir;
 
 	String absBaseDir;
 	String inputDir;
@@ -35,41 +50,49 @@ public class TopicModeling {
 	public static HashMap<String, ArrayList<String>> docIdToHighestTopic;
 	public static HashMap<String, ArrayList<DocProb>> topicToDocs;
 	public static HashMap<String, ArrayList<String>> highestDocs;//topic index to highest doc in that topic that is being displayed
-	public TopicModeling (HttpServletRequest req) throws IOException, NumberFormatException, ErrorForUI {
-		features = new HashMap<String, HashMap<Integer, Float>>();
-		docIdToHighestTopic = new HashMap<String, ArrayList<String>>();
-		topicToDocs = new  HashMap<String, ArrayList<DocProb>>();
-		highestDocs = new  HashMap<String, ArrayList<String>>(); //topic index to highest doc in that topic that is being displayed
+    private String modelDocsFile;
+    private String modelTopicWordsFile;
+    private String shuffledTopDocsFile;
 
-		this.absBaseDir = Constants.ABS_BASE_DIR;
-		this.baseDir = Constants.RESULT_DIR;
+	public TopicModeling() {
 
-		this.absInputDir = this.absBaseDir+"results/"+ Constants.CORPUS_NAME+"/input";
-		this.inputDir = baseDir + Constants.CORPUS_NAME + "/input";
-		String absTopicDir = this.absBaseDir+"results/" + Constants.CORPUS_NAME + "/output/T" + Constants.NUM_TOPICS;
-		this.absOutputDir = absTopicDir + "/init";
-		String topicDir = this.baseDir+ Constants.CORPUS_NAME+"/output/T"+ Constants.NUM_TOPICS;
-		this.outputDir = topicDir + "/init";
-		System.out.println(absTopicDir);
-		Util.creatDir(absTopicDir);
-		
-
-		this.inputData = absInputDir + "/" + Constants.CORPUS_NAME + "-topic-input.mallet";//feeding in the input corpus in mallet format
-		this.vocabFile = absInputDir + "/" + Constants.CORPUS_NAME + ".voc";
-		this.urlFile = inputDir + "/" + Constants.CORPUS_NAME + ".url";
-		this.summaryFile = this.baseDir.split("results")[0] + "data/"+ Constants.CORPUS_NAME+".titles";
-		this.absOutputName = this.absOutputDir + "/model";
-		this.outputName = this.outputDir + "/model";
-		this.wordsNumPerTopic = Constants.TOPIC_WORD_NUM;
-		this.docsNumPerTopic = Constants.TOPIC_DOC_NUM;
-		
-		genVocab();
-		this.initializeData(req);
 	}
-	public void initializeData(HttpServletRequest req) throws IOException, NumberFormatException, ErrorForUI{
-		this.featureFileDir = this.baseDir+ Constants.CORPUS_NAME + "/output/T"+ Constants.NUM_TOPICS+"/init/"+ Constants.CORPUS_NAME+".feat";
-		loadFeatures(features, req);
-		loadTopicProbs(docIdToHighestTopic, highestDocs, topicToDocs, req);
+
+    @PostConstruct
+    void init() throws IOException, ErrorForUI {
+        features = new HashMap<>();
+        docIdToHighestTopic = new HashMap<>();
+        topicToDocs = new HashMap<>();
+        highestDocs = new HashMap<>(); //topic index to highest doc in that topic that is being displayed
+
+        //the path structure should be /path/to/<corpus>/
+        //which has the following subdirectory structure:
+        // /path/to/<corpus>/output/<num topics>
+
+        //the synthetic data structure is already part of the classpath resources, but should be accessed via absolute
+        //path for consistency...
+
+        String resultsBaseDir = String.format("%1$s/%2$s", this.dataDirectory, this.corpusName);
+		String inputDir = String.format("%1$s/input", resultsBaseDir, this.corpusName);
+		String absTopicDir = String.format("%1$s/output/T%2$s", resultsBaseDir, Constants.NUM_TOPICS);
+
+        this.absOutputDir = absTopicDir + "/init";
+
+        this.inputData = inputDir + "/" + this.corpusName + "-topic-input.mallet";//feeding in the input corpus in mallet format
+        this.vocabFile = inputDir + "/" + this.corpusName + ".voc";
+        this.urlFile = inputDir + "/" + this.corpusName + ".url";
+        this.summaryFile = this.dataDirectory + "/" + this.corpusName + ".titles";
+        this.outputName = this.outputDir + "/model";
+		this.featureFileDir = this.absOutputDir + "/" + this.corpusName + ".feat";
+        this.modelDocsFile = this.absOutputDir + "/" + "model.docs";
+        this.modelTopicWordsFile = this.absOutputDir + "/" + "model.topics";
+        this.shuffledTopDocsFile = this.absOutputDir + "/" + "shuffledTopDocs.txt";
+        genVocab();
+    }
+
+	public void initializeData() throws IOException, NumberFormatException, ErrorForUI{
+		loadFeatures(features);
+		loadTopicProbs(docIdToHighestTopic, highestDocs, topicToDocs);
 	}
 
 	public class DocProb implements Comparable<Object> {
@@ -125,17 +148,19 @@ public class TopicModeling {
 	}
 	
 	public void rankDocs(ArrayList<String> fileList, HashMap<Integer, DocProb[]> topicDocsRanked, 
-			HashMap<String, Integer> docToHighestTopic, HttpServletRequest req) throws ErrorForUI {
+			HashMap<String, Integer> docToHighestTopic) throws ErrorForUI {
 
 		HashMap<Integer, ArrayList<DocProb>> topicDocs = new HashMap<Integer, ArrayList<DocProb>> ();
+        FileInputStream fis = null;
+        BufferedReader bufferedReader = null;
+        //TODO: This is file is read thru twice. Once here and once in the loadTopicProbs function.
 		try{
-			String inputfile = this.outputName + ".docs";
-			BufferedReader breader;
-			breader = new BufferedReader(new InputStreamReader(req.getSession().getServletContext().getResourceAsStream("/"+inputfile)));
+            fis = new FileInputStream(this.modelDocsFile);
+			bufferedReader = new BufferedReader(new InputStreamReader(fis));
 
 			String strLine;
 			int count = -1;
-			while ((strLine = breader.readLine()) != null) {
+			while ((strLine = bufferedReader.readLine()) != null) {
 				count++;
 				if (count == 0) continue;
 
@@ -187,21 +212,22 @@ public class TopicModeling {
 		}
 
 	}
-	private HashMap<String, String> loadTopics (HttpServletRequest req) throws ErrorForUI {
+	private HashMap<String, String> loadTopics () throws ErrorForUI {
 		//reads in topic file and fills in the map from topics to its top words 
 		HashMap<String, String> wordTopics = new HashMap<String, String> ();
-		try {
-			String topicWordsFile = this.outputName + ".topics";
+        FileInputStream fis = null;
+        BufferedReader bufferedReader = null;
 
-			BufferedReader br = new BufferedReader
-					(new InputStreamReader(req.getSession().getServletContext().getResourceAsStream("/"+topicWordsFile)));
+		try {
+            fis = new FileInputStream(this.modelTopicWordsFile);
+			bufferedReader = new BufferedReader(new InputStreamReader(fis));
 			String strLine;
 		
 			HashMap<Integer, HashMap<String, Double>> topicWordToWeights = new HashMap<Integer, HashMap<String, Double>>();
 			for(int i = 0 ; i < Constants.NUM_TOPICS; i++){
-				topicWordToWeights.put(i, new HashMap<String, Double>());
+				topicWordToWeights.put(i, new HashMap<>());
 			}
-			while ((strLine = br.readLine()) != null) {
+			while ((strLine = bufferedReader.readLine()) != null) {
 				strLine = strLine.trim();
 				String[] items = strLine.split("\\s+");
 				int topicIndex = Integer.parseInt(items[0]);
@@ -246,16 +272,26 @@ public class TopicModeling {
 			System.out.println("No model.topics file found!");
 			throw new ErrorForUI(e);
 		}
+        finally {
+            try {
+                bufferedReader.close();
+                fis.close();
+            }
+            catch(Exception e) {
+                throw new RuntimeException(e);
+            }
+
+        }
 		return wordTopics;
 	}
 
 	//docTopics: maps topics to this.docsNumPerTopic top related docs
 	private String loadDocs(HashMap<String, String> docTopics,
-			HashMap<String, Integer> docToHighestTopic, HttpServletRequest req) throws ErrorForUI, IOException {
+			HashMap<String, Integer> docToHighestTopic) throws ErrorForUI, IOException {
 		// rank related documents for each topic
-		ArrayList<String> fileList = new ArrayList<String> ();
-		HashMap<Integer, DocProb[]> topicDocsRanked = new HashMap<Integer, DocProb[]> ();		
-		this.rankDocs(fileList, topicDocsRanked, docToHighestTopic, req);
+		ArrayList<String> fileList = new ArrayList<>();
+		HashMap<Integer, DocProb[]> topicDocsRanked = new HashMap<>();
+		this.rankDocs(fileList, topicDocsRanked, docToHighestTopic);
 
 		String docJson = "\"documents\": [";
 		for(int topic : topicDocsRanked.keySet()) {
@@ -283,11 +319,11 @@ public class TopicModeling {
 		Collections.shuffle(allInitialTopDocs);
 		writeAllInitialTopDocsToFile();
 		//read from file and fill in shuffledDocs
-		String shuffledDocsJson = getShuffledDocsJson(req);
+		String shuffledDocsJson = getShuffledDocsJson();
 		docJson += shuffledDocsJson;
 		docJson += "\"all_documents\": [";
 		HashMap<String, String> idToSummary = new HashMap<String, String>();
-		loadDocSummaries(req, idToSummary);
+		loadDocSummaries(idToSummary);
 		for(int i = 0; i < fileList.size(); i++){
 			String name = fileList.get(i);
 			docJson += "{\"name\": \"" + name +"\",\"summary\":\""+idToSummary.get(name)+"\",\"highestTopic\":\""+docIdToHighestTopic.get(name).get(0)+"\"}, ";
@@ -298,15 +334,25 @@ public class TopicModeling {
 	
 		return docJson;
 	}
-	public void loadDocSummaries(HttpServletRequest req, HashMap<String, String> idToSummary) throws IOException{
+	public void loadDocSummaries(HashMap<String, String> idToSummary) throws IOException {
 		//String json = "\"doc_summaries\":[";
-		BufferedReader breader;
-		breader = new BufferedReader(new InputStreamReader(req.getSession().getServletContext().getResourceAsStream("/"+this.summaryFile)));
-		String strLine;
-		while ((strLine = breader.readLine()) != null) {
-			String[] items = strLine.trim().split("#");
-			idToSummary.put(items[0], items[1]);
-		}
+
+        FileInputStream fis = null;
+		BufferedReader bufferedReader = null;
+
+        try {
+            fis = new FileInputStream(this.summaryFile);
+            bufferedReader = new BufferedReader(new InputStreamReader(fis));
+            String strLine;
+            while ((strLine = bufferedReader.readLine()) != null) {
+                String[] items = strLine.trim().split("#");
+                idToSummary.put(items[0], items[1]);
+            }
+        }
+        finally {
+            fis.close();
+            bufferedReader.close();
+        }
 	}
 	public void writeAllInitialTopDocsToFile() throws ErrorForUI, IOException {
 		// writes shuffled initial top docs to file for baseline to load
@@ -325,31 +371,38 @@ public class TopicModeling {
 		}
 		writer.close();
 	}
-	public String getShuffledDocsJson(HttpServletRequest req) throws IOException{
+	public String getShuffledDocsJson() throws IOException{
 		String json = "\"shuffledDocs\":[";
 		String inputfile = this.outputDir+"/shuffledTopDocs.txt";
 
-		BufferedReader breader;
-		//System.out.println(req.getSession().getServletContext().getResourceAsStream("/"+inputfile));
+        FileInputStream fis = null;
+		BufferedReader bufferedReader = null;
 
-		breader = new BufferedReader(new InputStreamReader(req.getSession().getServletContext().getResourceAsStream("/"+inputfile)));
-		String strLine;
-		while ((strLine = breader.readLine()) != null) {
-			json += "\""+strLine.trim()+"\",";
-		}
-		json = json.substring(0, json.length()-1);
-		json += "],";
+        try {
+            fis = new FileInputStream(this.shuffledTopDocsFile);
+            bufferedReader = new BufferedReader(new InputStreamReader(fis));
+            String strLine;
+            while ((strLine = bufferedReader.readLine()) != null) {
+                json += "\"" + strLine.trim() + "\",";
+            }
+            json = json.substring(0, json.length() - 1);
+            json += "],";
+        }
+        finally {
+            fis.close();
+            bufferedReader.close();
+        }
 		return json;
 	}
-	public String changeFormat(HttpServletRequest req) throws ErrorForUI, IOException{
+	public String changeFormat() throws ErrorForUI, IOException{
 		// read topics
-		HashMap<String, String> wordTopics = this.loadTopics(req);
+		HashMap<String, String> wordTopics = this.loadTopics();
 
 		// read documents
-		HashMap<String, String> docTopics = new HashMap<String, String> ();
-		HashMap<String, Integer> docToHighestTopic = new HashMap<String, Integer>();
+		HashMap<String, String> docTopics = new HashMap<>();
+		HashMap<String, Integer> docToHighestTopic = new HashMap<>();
 
-		String docJson = this.loadDocs(docTopics, docToHighestTopic, req);
+		String docJson = this.loadDocs(docTopics, docToHighestTopic);
 
 		String topicJson = "\"topics\": [";
 		for(String topic : wordTopics.keySet()) {
@@ -357,74 +410,88 @@ public class TopicModeling {
 		}
 		topicJson += "], ";
 		topicJson = topicJson.replace("}, ], ", "} ], ");
-		return  "{ " + docJson + topicJson + "\"corpusname\":\"" + Constants.CORPUS_NAME+"\",\"topicsnum\":\""+ Constants.NUM_TOPICS+ "\"}";
+		return  "{ " + docJson + topicJson + "\"corpusname\":\"" + this.corpusName +"\",\"topicsnum\":\""+ Constants.NUM_TOPICS+ "\"}";
 	}
 
 	public void loadTopicProbs(HashMap<String, ArrayList<String>> docIdToHighestTopic, HashMap<String, ArrayList<String>> highestDocs,
-			HashMap<String, ArrayList<DocProb>> topicToDocs, HttpServletRequest req) throws NumberFormatException, IOException{
+			HashMap<String, ArrayList<DocProb>> topicToDocs) throws NumberFormatException, IOException{
 		//reads the model.doc file and loads doc to highest <topic,prob>
 		for(int i = 0 ; i < Constants.NUM_TOPICS; i++){
-			ArrayList<DocProb> docs = new ArrayList<DocProb>();
+			ArrayList<DocProb> docs = new ArrayList<>();
 			topicToDocs.put(String.valueOf(i), docs);
 		}
 
-		String inputfile = this.baseDir+ Constants.CORPUS_NAME + "/output/T"+ Constants.NUM_TOPICS+"/init/model.docs";
-		BufferedReader breader;
-		breader = new BufferedReader(new InputStreamReader(req.getSession().getServletContext().getResourceAsStream("/"+inputfile)));
+        BufferedReader breader = null;
+        FileInputStream fis = null;
 
-		String strLine;
-		int count = -1;
-		String[] tmp;
-		String docRealId; String topicIndex; String topicProb; DocProb docObj;
-		while ((strLine = breader.readLine()) != null) {
-			count++;
-			if (count == 0) continue;
+        try {
+            fis = new FileInputStream(this.modelDocsFile);
+            breader = new BufferedReader(new InputStreamReader(fis));
 
-			strLine = strLine.trim();
+            String strLine;
+            int count = -1;
+            String[] tmp;
+            String docRealId;
+            String topicIndex;
+            String topicProb;
+            DocProb docObj;
+            while ((strLine = breader.readLine()) != null) {
+                count++;
+                if (count == 0) continue;
 
-			String[] str = strLine.split("\\s+");
-			// id, doc, prob
-			//add high document topics
-			tmp = str[1].trim().split("/");
-			docRealId = tmp[tmp.length-1];
-			topicIndex = str[2];
-			topicProb = str[3];
-			docObj = new DocProb(docRealId, Double.parseDouble(topicProb));
-			ArrayList<String> data = new ArrayList<String>();
-			data.add(topicIndex);
-			data.add(topicProb);
-			docIdToHighestTopic.put(docRealId, data);
-			topicToDocs.get(topicIndex).add(docObj);
-		}
-		// sort topic docs based on probability
-		//String topicIndex;
-		for(int i = 0 ; i < Constants.NUM_TOPICS; i++){
-			topicIndex = String.valueOf(i);
-			ArrayList<DocProb> array = topicToDocs.get(topicIndex);
-			Collections.sort(array);
-			topicToDocs.put(topicIndex, array);
-		}
-		for(int i = 0 ; i < Constants.NUM_TOPICS; i++){
-			topicIndex = String.valueOf(i);
-			ArrayList<String> topicHighestDocs = new ArrayList<String>();
-			int k = 0;
-			for(DocProb docObj1:topicToDocs.get(topicIndex)){//for all docs in that topic
-				String docId = docObj1.id;
-				if (k < Constants.TOPIC_DOC_NUM){
-					topicHighestDocs.add(docId);
-					k++;
-				}
-			}
-			highestDocs.put(topicIndex, topicHighestDocs);
-		}
-		
+                strLine = strLine.trim();
+
+                String[] str = strLine.split("\\s+");
+                // id, doc, prob
+                //add high document topics
+                tmp = str[1].trim().split("/");
+                docRealId = tmp[tmp.length - 1];
+                topicIndex = str[2];
+                topicProb = str[3];
+                docObj = new DocProb(docRealId, Double.parseDouble(topicProb));
+                ArrayList<String> data = new ArrayList<String>();
+                data.add(topicIndex);
+                data.add(topicProb);
+                docIdToHighestTopic.put(docRealId, data);
+                topicToDocs.get(topicIndex).add(docObj);
+            }
+            // sort topic docs based on probability
+            //String topicIndex;
+            for (int i = 0; i < Constants.NUM_TOPICS; i++) {
+                topicIndex = String.valueOf(i);
+                ArrayList<DocProb> array = topicToDocs.get(topicIndex);
+                Collections.sort(array);
+                topicToDocs.put(topicIndex, array);
+            }
+            for (int i = 0; i < Constants.NUM_TOPICS; i++) {
+                topicIndex = String.valueOf(i);
+                ArrayList<String> topicHighestDocs = new ArrayList<String>();
+                int k = 0;
+                for (DocProb docObj1 : topicToDocs.get(topicIndex)) {//for all docs in that topic
+                    String docId = docObj1.id;
+                    if (k < Constants.TOPIC_DOC_NUM) {
+                        topicHighestDocs.add(docId);
+                        k++;
+                    }
+                }
+                highestDocs.put(topicIndex, topicHighestDocs);
+            }
+        }
+        finally {
+            breader.close();
+            fis.close();
+        }
 	}
-	public void loadFeatures(HashMap<String, HashMap<Integer, Float>> features, HttpServletRequest req) throws ErrorForUI, NumberFormatException, IOException {
+
+
+	public void loadFeatures(HashMap<String, HashMap<Integer, Float>> features) throws ErrorForUI, NumberFormatException, IOException {
 		Featurizer ff = new Featurizer();
-		ff.featurize();
+		ff.featurize(this.featureFileDir);
 		System.out.print("loading features...");
 
-		BufferedReader br = new BufferedReader(new InputStreamReader(req.getSession().getServletContext().getResourceAsStream("/"+this.featureFileDir)));
+
+        FileInputStream fis = new FileInputStream(this.featureFileDir);
+        BufferedReader br = new BufferedReader(new InputStreamReader(fis));
 
 		String strLine;
 		int numFeatures = 0;
@@ -442,7 +509,7 @@ public class TopicModeling {
 				featureIndex = Integer.parseInt(data[0])-1;//-1 to start from 0
 				float featureVal = Float.parseFloat(data[1]);
 				indexToFeature.put(featureIndex, featureVal);
-				numFeatures = featureIndex+1;//last index 
+				numFeatures = featureIndex+1;//last index
 			}
 
 			//add zero feature for #labeled docs in the highest Topic

@@ -1,30 +1,33 @@
 package api;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.*;
 
 @Controller
 @RequestMapping("/alto-release")
 public class DisplayDataController {
-	private String baseDir;
-	private static HashMap<String, Integer> idToIndex;//maps doc id to the indec
-	private static ArrayList<String> texts;//keeps doc texts that is displayed
-	private static ArrayList<String> ids;//keeps doc ids 
-	private static final long serialVersionUID = 1L;
+
+    @Value("${alto.data.corpus_name:synthetic}")
+    String corpusName;
+
+    @Value("${alto.data.base_dir:/usr/local/alto-boot}")
+    String dataDirectory;
+
+	private Map<String, Integer> idToIndex = new HashMap<>();//maps doc id to the indec
+	private List<String> texts = new ArrayList<>();//keeps doc texts that is displayed
+	private List<String> ids = new ArrayList<>();//keeps doc ids
 
     @RequestMapping("DisplayData")
     public void displayDataRoute(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        this.baseDir = util.Constants.RESULT_DIR;
         boolean isLabelDocs = Boolean.parseBoolean(req.getParameter("isLabelDocs"));//TODO:send the parameter
-        String backend = this.baseDir.split("results")[0] + "data/"+util.Constants.CORPUS_NAME+".html";
-        getData(backend, req);
+        String backend = this.dataDirectory + "/" + this.corpusName + ".html";
+        getData(backend);
         resp.setCharacterEncoding("UTF-8");
         String htmlStr = "";
         if(!isLabelDocs){
@@ -64,53 +67,62 @@ public class DisplayDataController {
 		return labelDocIds;
 	}
 
-	public void getData(String inputfile, HttpServletRequest req) throws IOException{
+	public void getData(String inputfile) throws IOException{
 		//Reads in the html file and fills in data
 		
-		texts = new ArrayList<>();
-		idToIndex = new HashMap<>();
-		ids = new ArrayList<>();
-		BufferedReader br;
-        InputStream inputFileStream = req.getSession().getServletContext().getResourceAsStream("/"+inputfile);
-		br = new BufferedReader(new InputStreamReader(inputFileStream));
+        FileInputStream fis = null;
+		BufferedReader br = null;
 
-		String strLine;
-		String id = "";
-		while ((strLine = br.readLine()) != null){
-			strLine = strLine.trim();
-			if (strLine.startsWith("<div class=\"segment\"")){
-				int i = strLine.indexOf("id=");
-				id = strLine.substring(i+4, strLine.length()-2);
-				ids.add(id);
-				texts.add("");
-			}
-		}
-		br.close();
-		//sort ids based on the string
-		Collections.sort(ids);
-		for (int i = 0 ; i < ids.size(); i++){
-			idToIndex.put(ids.get(i), i);
-		}
-		//read from file again and fill in texts
-		br = new BufferedReader(new InputStreamReader(req.getSession().getServletContext().getResourceAsStream("/"+inputfile)));
-		strLine="";
-		id = "";
-		while ((strLine = br.readLine()) != null){
-			strLine = strLine.trim();
-			if (strLine.startsWith("<div class=\"segment\"")){
-				int i = strLine.indexOf("id=");
-				id = strLine.substring(i+4, strLine.length()-2);
-				int index = idToIndex.get(id);
+        try {
+            fis = new FileInputStream(inputfile);
+            br = new BufferedReader(new InputStreamReader(fis));
 
-				String line = "";
-				String text = "";
-				while(!(line = br.readLine()).equals("</p>")){
-					text += " "+line;
-				}
-				texts.set(index,text);
-			}
-		}
-		br.close();
+            String strLine;
+            String id = "";
+            while ((strLine = br.readLine()) != null) {
+                strLine = strLine.trim();
+                if (strLine.startsWith("<div class=\"segment\"")) {
+                    int i = strLine.indexOf("id=");
+                    id = strLine.substring(i + 4, strLine.length() - 2);
+                    ids.add(id);
+                    texts.add("");
+                }
+            }
+
+            //sort ids based on the string
+            Collections.sort(ids);
+            for (int i = 0 ; i < ids.size(); i++){
+                idToIndex.put(ids.get(i), i);
+            }
+
+            //TODO: why read the file again??
+            br.close();
+            fis.close();
+
+            fis = new FileInputStream(inputfile);
+            br = new BufferedReader(new InputStreamReader(fis));
+
+            while ((strLine = br.readLine()) != null) {
+                strLine = strLine.trim();
+                if (strLine.startsWith("<div class=\"segment\"")) {
+                    int i = strLine.indexOf("id=");
+                    id = strLine.substring(i + 4, strLine.length() - 2);
+                    int index = idToIndex.get(id);
+
+                    String line = "";
+                    String text = "";
+                    while (!(line = br.readLine()).equals("</p>")) {
+                        text += " " + line;
+                    }
+                    texts.set(index, text);
+                }
+            }
+        }
+        finally {
+            br.close();
+            fis.close();
+        }
+
 	}
 	public String getLabelDocsRelatedTexts(ArrayList<String> labelDocIds, int startIndex, int endIndex, int numDocsPerPage, String labelName, 
 			String labelSetStr, boolean isRefreshed){

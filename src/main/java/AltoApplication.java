@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 
 @EnableAutoConfiguration
-@ComponentScan({ "api" })
+@ComponentScan({ "api", "alto" })
 public class AltoApplication {
 
     public static void main(String[] args) throws Exception {

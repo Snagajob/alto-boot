@@ -2,6 +2,7 @@ package api;
 
 import alto.Backend;
 import alto.ErrorForUI;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -19,6 +20,9 @@ import java.io.PrintWriter;
 @Controller
 @RequestMapping("/alto-release")
 public class DataLoaderController {
+
+	@Autowired
+    Backend backend;
 
 	@RequestMapping(value = "DataLoader", method = RequestMethod.GET)
     public void dataLoaderGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -38,7 +42,7 @@ public class DataLoaderController {
 		String json="";
 	try{	
 		String username = req.getParameter("username");
-		json = Backend.createNewSession(username, req);
+		json = backend.newSession(username);
 		
 		System.out.println(json);
 		response.setContentType("application/json");
