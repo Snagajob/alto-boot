@@ -18,11 +18,12 @@ import java.io.PrintWriter;
  * Servlet implementation class DataLoaderController
  */
 @Controller
-@RequestMapping("/alto-release")
+@RequestMapping("/alto-boot")
 public class DataLoaderController {
 
 	@Autowired
     Backend backend;
+
 
 	@RequestMapping(value = "DataLoader", method = RequestMethod.GET)
     public void dataLoaderGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {

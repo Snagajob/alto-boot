@@ -4,6 +4,8 @@ import alto.LogisticRegressor;
 import alto.TopicModeling;
 import alto.TopicModeling.DocProb;
 import org.apache.catalina.servlet4preview.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -13,12 +15,21 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Controller
-@RequestMapping("/alto-release")
+@RequestMapping("/alto-boot")
 public class ClassifyController {
     public static final String TA_CONDITION = "TA";
     public static final String TR_CONDITION = "TR";
     public static final String LA_CONDITION = "LA";
     public static final String LR_CONDITION = "LR";
+
+    @Autowired
+    private LogisticRegressor w;
+
+    @Value("${alto.data.corpus_name:synthetic}")
+    String corpusName;
+
+    @Value("${alto.data.base_dir:/usr/local/alto-boot}")
+    String dataDirectory;
 
     class ValueComparator implements Comparator<String> {//comparator to sort a treemap based on values
 
@@ -109,7 +120,7 @@ public class ClassifyController {
         int i = 0;
         if(AL){//write top ids in json string
             //update topLabelDocuments and allTopLabelDocuments if delete/edit a label
-            LogisticRegressor w = new LogisticRegressor(TopicModeling.features, idToLabelMap, labelStrToInt, testingIdList,
+            w.init(TopicModeling.features, idToLabelMap, labelStrToInt, testingIdList,
                     updateTestingIdToLabel, updateTestingIdToProbs, corpusName, numTopics, isFromScratch, AL, isFirstTime, trainingLabelSet, req);
             if(deletedDocLabel){
                 if(testingIdToLabel != null){
@@ -149,7 +160,7 @@ public class ClassifyController {
         else {//write classification results in json string
             testingIdToLabel = new HashMap<String, String>();
             testingIdToProbs = new HashMap<String, ArrayList<Double>>();
-            LogisticRegressor w = new LogisticRegressor(TopicModeling.features, idToLabelMap, labelStrToInt, testingIdList,
+            w.init(TopicModeling.features, idToLabelMap, labelStrToInt, testingIdList,
                     testingIdToLabel, testingIdToProbs, corpusName, numTopics, isFromScratch, AL, isFirstTime, trainingLabelSet, req);
             loggingMode = "classifier";
             //update topLabelToIds and allTopLabelDocuments
@@ -618,7 +629,7 @@ public class ClassifyController {
             fileName = userName + "_" + timeStamp+"_update.log";
         }
         //String filename = getServletContext().getRealPath("/"+dir+fileName);
-        String filename = util.Constants.ABS_BASE_DIR+"results/"+ util.Constants.CORPUS_NAME+"/log/"+fileName;
+        String filename = this.dataDirectory + "/" + this.corpusName + "/log/" + fileName;
 
         Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename),"UTF8"));
 

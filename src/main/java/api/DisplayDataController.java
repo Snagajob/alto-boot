@@ -10,7 +10,7 @@ import java.io.*;
 import java.util.*;
 
 @Controller
-@RequestMapping("/alto-release")
+@RequestMapping("/alto-boot")
 public class DisplayDataController {
 
     @Value("${alto.data.corpus_name:synthetic}")

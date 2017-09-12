@@ -26,25 +26,16 @@ public class TopicModeling {
 	@Value("${alto.data.top_docs_per_topic:20}")
 	int docsNumPerTopic;
 
-	String baseDir;
-
-	String absBaseDir;
-	String inputDir;
 	String outputDir;
 	String inputData;
 	String outputName;
 	String vocabFile;
 	String featureFileDir;
-	String removedFile;
 	String urlFile;
 	String summaryFile;
-
-	int docLen;
-	String absInputDir;
-	String absOutputName;
 	String absOutputDir;
 	
-	public ArrayList<String> allInitialTopDocs = new ArrayList<String>();//all of the top documents displayed in the beginning
+	public ArrayList<String> allInitialTopDocs = new ArrayList<>();//all of the top documents displayed in the beginning
 
 	public static HashMap<String, HashMap<Integer, Float>> features;
 	public static HashMap<String, ArrayList<String>> docIdToHighestTopic;
@@ -64,13 +55,6 @@ public class TopicModeling {
         docIdToHighestTopic = new HashMap<>();
         topicToDocs = new HashMap<>();
         highestDocs = new HashMap<>(); //topic index to highest doc in that topic that is being displayed
-
-        //the path structure should be /path/to/<corpus>/
-        //which has the following subdirectory structure:
-        // /path/to/<corpus>/output/<num topics>
-
-        //the synthetic data structure is already part of the classpath resources, but should be accessed via absolute
-        //path for consistency...
 
         String resultsBaseDir = String.format("%1$s/%2$s", this.dataDirectory, this.corpusName);
 		String inputDir = String.format("%1$s/input", resultsBaseDir, this.corpusName);

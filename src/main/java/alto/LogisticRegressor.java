@@ -6,6 +6,8 @@ import com.aliasi.matrix.Vector;
 import com.aliasi.stats.AnnealingSchedule;
 import com.aliasi.stats.LogisticRegression;
 import com.aliasi.stats.RegressionPrior;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.*;
@@ -13,7 +15,15 @@ import java.util.*;
 
 //import servlet.LogisticRegression;
 
+@Component
 public class LogisticRegressor  {
+
+    @Value("${alto.data.corpus_name:synthetic}")
+    String corpusName;
+
+    @Value("${alto.data.base_dir:/usr/local/alto-boot}")
+    String dataDirectory;
+
 	public void fillTopicLabeledDocs(HashMap<String, Integer> topicLabeledDocs, TreeMap<String , String> idToLabelMap, int numTopics){
 		for(int i = 0;i < numTopics; i++){
 			topicLabeledDocs.put(i+"", 0);
@@ -24,12 +34,16 @@ public class LogisticRegressor  {
 		}
 	}
 	String outputModelFileName = "";
-	public LogisticRegressor(HashMap<String, HashMap<Integer, Float>> features, TreeMap<String , String> idToLabelMap,
+
+    public LogisticRegressor() {
+
+    }
+
+	public void init(HashMap<String, HashMap<Integer, Float>> features, TreeMap<String , String> idToLabelMap,
 			HashMap<String, Integer> labelStrToInt, ArrayList<String> testingIdList, 
 			HashMap<String, String> testingIdToLabel, HashMap<String, ArrayList<Double>> idToProbs,
 			String corpusName, int numTopics, boolean isFromScratch, boolean isAL, boolean isFirstTime, Set<String> trainingLabelSet, HttpServletRequest req) throws IOException{			
-		String tmp = util.Constants.RESULT_DIR+corpusName+ "/output/T"+String.valueOf(numTopics)+"/init/"+corpusName+"_model.saved";
-		this.outputModelFileName = req.getSession().getServletContext().getRealPath("/"+tmp);
+		this.outputModelFileName = this.dataDirectory + "/" + this.corpusName + "/output/T" + String.valueOf(numTopics) + "/init" + this.corpusName + "_model.saved";
 		//create training set
 		int trainingSize = idToLabelMap.keySet().size();
 		int testingSize = testingIdList.size();

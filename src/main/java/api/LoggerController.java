@@ -1,6 +1,7 @@
 package api;
 
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -12,21 +13,26 @@ import java.util.Calendar;
 
 //TODO: if there is no label, throws an exception. FIX!
 @Controller
-@RequestMapping("/alto-release")
+@RequestMapping("/alto-boot")
 public class LoggerController {
+
+    @Value("${alto.data.corpus_name:synthetic}")
+    String corpusName;
+
+    @Value("${alto.data.base_dir:/usr/local/alto-boot}")
+    String dataDirectory;
 
 	@RequestMapping("Logger")
 	public void loggerRoute(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         //System.out.println("taking logs.....");
         String userName = req.getParameter("username");
-        String corpusName = req.getParameter("corpusname");
         String logFileNum = req.getParameter("logfilenum");
         String logStr = req.getParameter("logStr");
         //String condition = req.getParameter("condition")
-        String dir = util.Constants.RESULT_DIR+corpusName+"/log/";
+        String dir = this.dataDirectory + "/" + "/" + this.corpusName+"/log/";
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
 
-        String filename = req.getServletContext().getRealPath("/"+dir+userName+"_log_"+logFileNum+"_"+timeStamp+".log");
+        String filename = dir + userName+"_log_"+logFileNum+"_"+timeStamp+".log";
         Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename),"UTF8"));
         writer.write(logStr);
         writer.close();
