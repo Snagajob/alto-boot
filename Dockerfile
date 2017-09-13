@@ -8,4 +8,4 @@ RUN apk add --no-cache bash
 WORKDIR /usr/local/alto-boot
 
 RUN ./gradlew assemble 
-CMD ./gradlew bootRun
+CMD SPRING_PROFILES_ACTIVE=docker ./gradlew bootRun
