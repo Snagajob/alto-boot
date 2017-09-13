@@ -7,9 +7,13 @@ $HOME/tree-TM/bin/mallet import-dir \
     --output $BASEDIR/WebContent/results/$CORPUS/input/$CORPUS-topic-input.mallet \
     --remove-stopwords TRUE \
     --keep-sequence TRUE \
+    --skip-html TRUE \
     --gram-sizes 1,2 \
-    --keep-sequence-bigrams
+    --keep-sequence-bigrams \
+    --extra-stopwords /Users/robert.mealey/match.nlp/resources/stopwords.lex
 
+
+mkdir -p $BASEDIR/WebContent/results/$CORPUS/output/T${NUMTOPICS}/init/ 
 
 $HOME/tree-TM/bin/mallet train-topics \
     --input $BASEDIR/WebContent/results/$CORPUS/input/$CORPUS-topic-input.mallet \
@@ -19,4 +23,5 @@ $HOME/tree-TM/bin/mallet train-topics \
     --optimize-interval 10 \
     --num-threads 30 \
     --output-topic-keys topic-keys.txt 
+
 

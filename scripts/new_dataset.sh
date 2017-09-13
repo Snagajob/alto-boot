@@ -40,6 +40,7 @@ $HOME/tree-TM/bin/mallet import-dir \
     --remove-stopwords TRUE \
     --keep-sequence TRUE \
     --gram-sizes 1,2 \
+    --skip-html TRUE \
     --keep-sequence-bigrams TRUE
 
 $HOME/tree-TM/bin/mallet train-topics \

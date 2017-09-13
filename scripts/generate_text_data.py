@@ -65,11 +65,14 @@ def json_to_corpus_text(posting_id):
 
     posting = client.get_database("posting").get_collection("posting").find_one(
                 {"_id":"{}".format(posting_id)},
-                {"po":1}
+                {"jd":1, "jt":1, "jr":1}
             )
 
     with open("{}/{}".format(outpath, posting["_id"]), "w") as f:
-            f.write(scrub(h2t.handle(posting["po"])))
+            f.write(posting["jt"]+"\n\n")
+            f.write(scrub(h2t.handle(posting["jd"])))
+            f.write("\n\n")
+            f.write(scrub(h2t.handle(posting.get("jr",""))))
 
 
 
