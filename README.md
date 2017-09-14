@@ -8,38 +8,51 @@ git clone https://github.com/Foroughp/ALTO-ACL-2016.git
 ```
 
 ## Requirements
-You need to have tomcat installed on your computer. Find your tomcat related directories. Let $TOMCAT be the tomcat directory.
+Java 1.8 
+
+Docker
 
 ## Compiling and Running
 Let BASEDIR be the directory of ALTO code.
 
 Please try the synthetic data first:
 ### Set constants:
- Open $BASEDIR/src/util/Constants.java, set the ABS_BASE_DIR to the abs path of $BASEDIR/WebContent/results, and TEXT_DATA_DIR to the abs path of $BASEDIR/text_data/synthetic/
+Open $BASEDIR/src/util/Constants.java, set the ABS_BASE_DIR to the abs path of $BASEDIR/WebContent/results, and TEXT_DATA_DIR to the abs path of $BASEDIR/text_data/synthetic/
 ### Compile: 
-- `cd $BASEDIR`
-
-- `mkdir WebContent/WEB-INF/classes`
-
-- `javac -cp WebContent/WEB-INF/lib/*:$TOMCAT/* src/*/*.java -d WebContent/WEB-INF/classes`
-
-### Copy to the tomcat webapps:
-- `cp -r WebContent $TOMCAT/webapps/`
-
-- `mv $TOMCAT/webapps/WebContent $TOMCAT/webapps/alto-release`
+- `./gradlew assemble`
 
 ### Run server:
-- Start the server: `$TOMCAT/bin/catalina.sh start`
+You can choose to run the application with your own JRE, or build using the dockerfile provided you have a native docker installation. 
+
+####Using spring boot directly: 
+
+- Start the server: `./gradlew bootRun`
+
+-or- 
+
+#### Using docker: 
+
+- build the docker image: `docker build -t alto-boot .` 
+- run the docker image: `docker run -d -p 8080:8080 --name alto-boot alto-boot` 
+
+
 
 - Open your browser: http://localhost:8080/alto-release/
-
 - Start using ALTO (see next step)
 
-- Stop the server: `$TOMCAT/bin/catalina.sh stop`
+
+
+#### Stopping ALTO: 
+
+- ctrl-c or kill will work if launching with `bootRun`
+
+- if using docker `docker kill alto-boot`
+
+  ​
 
 ### Try ALTO:
 check the ALTO paper in ACL 2016 for details about this interface
-	
+​	
 - Type user name, choose a condition, and click "Start".
 - You can click the documents to see the actual content.
 - If in TA or TR conditions, check the topics: the top words and top related documents for each topic are displayed. You can click the documents to see the actual content.

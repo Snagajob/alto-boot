@@ -1,10 +1,13 @@
-WebContent/WEB-INF/classes/
+.gradle
+.idea
+build
+*.iml
+application-local.properties
+data/
+text_data/
 *.log
 *.swp
 *.swo
-WebContent/data/
-WebContent/results/
-text_data/
 .DS_Store
 .idea
 *.pkl

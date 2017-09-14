@@ -23,8 +23,8 @@ def worker_init(outpath_in, mongo_host):
 
     global stops
     global noisy_paragraphs
-    stops = load_stopwords(os.path.expanduser("~")+"/match.nlp/resources/stopwords.lex")
-    noisy_paragraphs = load_stopwords(os.path.expanduser("~")+"/match.nlp/resources/noisy_paragraphs.lex")
+    stops = load_stopwords()
+    noisy_paragraphs = load_noisy_paragraphs()
 
 
 def scrub(text):
@@ -42,13 +42,13 @@ def scrub(text):
     return text
 
 
-def load_stopwords(stopwords_path="./resources/stopwords.lex"):
+def load_stopwords(stopwords_path="./nlp_resources/stopwords.lex"):
     with open(stopwords_path, "r") as f:
         stopwords = {w.strip("\n") for w in f.readlines()}
     return stopwords
 
 
-def load_noisy_paragraphs(noisy_paragraphs_path="./resources/noisy_paragraphs.lex"):
+def load_noisy_paragraphs(noisy_paragraphs_path="./nlp_resources/noisy_paragraphs.lex"):
     with open(noisy_paragraphs_path, "r") as f:
         noisy_paragraphs = {p.strip("\n") for p in f.readlines()}
     return noisy_paragraphs

@@ -1,0 +1,24 @@
+plugins {
+    id 'org.springframework.boot' version '1.5.6.RELEASE'
+    id 'java'
+}
+
+group 'alto'
+version '1.0-SNAPSHOT'
+
+springBoot {
+    mainClass = "AltoApplication"
+}
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile("org.springframework.boot:spring-boot-starter-web:1.5.6.RELEASE")
+    compile("cc.mallet:mallet:2.0.8")
+    compile("de.julielab:aliasi-lingpipe:4.1.0")
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+}
