@@ -43,7 +43,7 @@ public class LogisticRegressor  {
 			HashMap<String, Integer> labelStrToInt, ArrayList<String> testingIdList, 
 			HashMap<String, String> testingIdToLabel, HashMap<String, ArrayList<Double>> idToProbs,
 			String corpusName, int numTopics, boolean isFromScratch, boolean isAL, boolean isFirstTime, Set<String> trainingLabelSet, HttpServletRequest req) throws IOException{			
-		this.outputModelFileName = this.dataDirectory + "/" + this.corpusName + "/output/T" + String.valueOf(numTopics) + "/init" + this.corpusName + "_model.saved";
+		this.outputModelFileName = this.dataDirectory + "/" + this.corpusName + "/output/T" + String.valueOf(numTopics) + "/init/" + this.corpusName + "_model.saved";
 		//create training set
 		int trainingSize = idToLabelMap.keySet().size();
 		int testingSize = testingIdList.size();

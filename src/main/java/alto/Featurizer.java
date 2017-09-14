@@ -81,7 +81,7 @@ public class Featurizer{
 	public void getData()
 			throws IOException {
 		// Reads doc id and doc text from file and fills in the map
-		String dir = sourceTextDirectory;
+		String dir = sourceTextDirectory + "/" + corpusName;
 		File folder = new File(dir);
 		File[] listOfFiles = folder.listFiles();
 

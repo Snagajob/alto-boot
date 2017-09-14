@@ -71,7 +71,7 @@ public class TopicModeling {
         this.urlFile = inputDir + "/" + this.corpusName + ".url";
         this.summaryFile = this.dataDirectory + "/" + this.corpusName + ".titles";
         this.outputName = this.outputDir + "/model";
-		this.featureFileDir = this.absOutputDir + "/" + this.corpusName + ".feat";
+        this.featureFileDir = this.absOutputDir + "/" + this.corpusName + ".feat";
         this.modelDocsFile = this.absOutputDir + "/" + "model.docs";
         this.modelTopicWordsFile = this.absOutputDir + "/" + "model.topics";
         this.shuffledTopDocsFile = this.absOutputDir + "/" + "shuffledTopDocs.txt";
@@ -404,10 +404,11 @@ public class TopicModeling {
 	public void loadTopicProbs(HashMap<String, ArrayList<String>> docIdToHighestTopic, HashMap<String, ArrayList<String>> highestDocs,
 			HashMap<String, ArrayList<DocProb>> topicToDocs) throws NumberFormatException, IOException{
 		//reads the model.doc file and loads doc to highest <topic,prob>
-		for(int i = 0 ; i < numTopics; i++){
-			ArrayList<DocProb> docs = new ArrayList<>();
-			topicToDocs.put(String.valueOf(i), docs);
+                for(int i = 0 ; i < numTopics; i++){
+                    ArrayList<DocProb> docs = new ArrayList<>();
+                    topicToDocs.put(String.valueOf(i), docs);
 		}
+
 
         BufferedReader breader = null;
         FileInputStream fis = null;
