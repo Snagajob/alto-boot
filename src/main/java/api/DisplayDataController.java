@@ -50,8 +50,6 @@ public class DisplayDataController {
         resp.setContentType("text/html");
 
         PrintWriter out = resp.getWriter();
-        //String dir = util.Constants.RESULT_DIR;
-        //out.print(getServletConfig().getServletContext().getRealPath("/"+dir));
         out.print(htmlStr);
         out.flush();
     }

@@ -17,7 +17,6 @@ import java.util.function.Supplier;
 @Component
 public class Featurizer{
 	
-	public String baseDir = util.Constants.ABS_BASE_DIR;
 	public ArrayList<String> ids = new ArrayList<>();
 	public TreeMap<String, String> idToTextMap = new TreeMap<>();
 	public TreeMap<String, TreeMap<Integer, Integer>> idToTokenCounts = new TreeMap<>();
@@ -25,16 +24,17 @@ public class Featurizer{
 	public HashMap<String, Integer> vocabToIndex = new HashMap<>();
 	public TreeMap<Integer, String> indexToVocab = new TreeMap<>();
 
-    @Value("${alto.data.base_dir:/usr/local/alto-boot}")
-    String dataDirectory;
+        @Value("${alto.data.base_dir:/usr/local/alto-boot}")
+        String dataDirectory;
 
-    @Value("${alto.data.corpus_name:synthetic}")
-    String corpusName;
+        @Value("${alto.data.corpus_name:synthetic}")
+        String corpusName;
 
-    @Value("${alto.data.source_text_dir}")
-    String sourceTextDirectory;
+        @Value("${alto.data.source_text_dir}")
+        String sourceTextDirectory;
 
-
+        @Value("${alto.data.num_topics:5}")
+        int numTopics;
 
 	public void featurize(String featuresDir) throws IOException{
 
@@ -64,7 +64,7 @@ public class Featurizer{
 	}
 
 	public void fillVocab() throws IOException{
-		FileInputStream infstream = new FileInputStream(this.baseDir+"results/"+util.Constants.CORPUS_NAME + "/input/"+util.Constants.CORPUS_NAME+ ".voc");
+		FileInputStream infstream = new FileInputStream(dataDirectory+"/"+corpusName + "/input/"+corpusName+ ".voc");
 		DataInputStream in = new DataInputStream(infstream);
 		BufferedReader br = new BufferedReader(new InputStreamReader(in));
 		String strLine = "";
@@ -81,7 +81,7 @@ public class Featurizer{
 	public void getData()
 			throws IOException {
 		// Reads doc id and doc text from file and fills in the map
-		String dir = util.Constants.TEXT_DATA_DIR;
+		String dir = sourceTextDirectory;
 		File folder = new File(dir);
 		File[] listOfFiles = folder.listFiles();
 
@@ -135,15 +135,15 @@ public class Featurizer{
 						+ String.valueOf(indexToFreqMap.get(index)) + " ";
 			}
 		
-		String topicFeatStr = getTopicProbFeature(docIdToTopicProb, id , numWordsFeatures+1);
+		String topicFeatStr = getTopicProbFeature(docIdToTopicProb, id , numWordsFeatures+1, numTopics);
 		line += topicFeatStr;
 		writer.write(line+"\n");
 	}
 
 	public void fillDocIdToTopicProbMap(HashMap<String, TreeMap<Integer, Double>> docIdToTopicProb) throws IOException{
 		//reads in model.docs file and fills in id to topic prob map
-		FileInputStream infstream = new FileInputStream(baseDir+"results/"+util.Constants.CORPUS_NAME+"/output/T"+
-		util.Constants.NUM_TOPICS+""+"/init/"+"model.docs");
+		FileInputStream infstream = new FileInputStream(dataDirectory+"/"+corpusName+"/output/T"+
+		numTopics+""+"/init/"+"model.docs");
 		DataInputStream in = new DataInputStream(infstream);
 		BufferedReader br = new BufferedReader(new InputStreamReader(in));
 		String strLine;
@@ -168,10 +168,10 @@ public class Featurizer{
 	}
 	public static String getTopicProbFeature(
 			HashMap<String, TreeMap<Integer, Double>> docIdToTopicProb, String docId,
-			int featureIndex) {
+			int featureIndex, int numTopics) {
 		//creates a line in the feature format for topic probs
 		String line = "";
-		for (int i = 0; i < util.Constants.NUM_TOPICS; i++) {
+		for (int i = 0; i < numTopics; i++) {
 			line += String.valueOf(featureIndex) + ":" + docIdToTopicProb.get(docId).get(i) + " ";
 			featureIndex++;
 		}
@@ -212,7 +212,7 @@ public class Featurizer{
 					}
 				}
 			}
-			String topicFeatStr = getTopicProbFeature(docIdToTopicProb, id , numWordsFeatures+1);
+			String topicFeatStr = getTopicProbFeature(docIdToTopicProb, id , numWordsFeatures+1, numTopics);
 			line += topicFeatStr;
 			writer.write(line+"\n");
 		}

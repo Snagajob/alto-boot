@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.beans.factory.annotation.Value;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -20,6 +21,10 @@ import java.io.PrintWriter;
 @Controller
 @RequestMapping("/alto-boot")
 public class DataLoaderController {
+
+
+    @Value("${alto.data.base_dir:/usr/local/alto-boot}")
+    String dataDirectory;
 
 	@Autowired
     Backend backend;
@@ -53,7 +58,7 @@ public class DataLoaderController {
 		out.flush();
 	}catch(ErrorForUI e){
 		out.print("{\"hasError\": true, \"message\":"+e.getMessage()+", \"stack:\":+"+e.getStack()
-				+", \"base directory: "+util.Constants.RESULT_DIR+"\" }");
+				+", \"base directory: "+dataDirectory+"\" }");
 		out.flush();
 	}
 	}

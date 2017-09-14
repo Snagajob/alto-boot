@@ -70,9 +70,6 @@ public class Util {
 	}
 	
 	public static void creatDir(String dir) throws IOException{
-		//if(util.Constants.FOR_DEPLOY)
-			//return;
-		
 		File theDir = new File(dir);
 		if (!theDir.exists()) {
 			if (theDir.mkdir()) {

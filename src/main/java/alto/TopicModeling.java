@@ -20,34 +20,38 @@ public class TopicModeling {
     @Value("${alto.data.base_dir:/usr/local/alto-boot}")
     String dataDirectory;
 
-	@Value("${alto.data.words_per_topic:20}")
-	int wordsNumPerTopic;
+    @Value("${alto.data.words_per_topic:20}")
+    int wordsNumPerTopic;
 
-	@Value("${alto.data.top_docs_per_topic:20}")
-	int docsNumPerTopic;
+    @Value("${alto.data.top_docs_per_topic:20}")
+    int docsNumPerTopic;
 
-	String outputDir;
-	String inputData;
-	String outputName;
-	String vocabFile;
-	String featureFileDir;
-	String urlFile;
-	String summaryFile;
-	String absOutputDir;
-	
-	public ArrayList<String> allInitialTopDocs = new ArrayList<>();//all of the top documents displayed in the beginning
+    @Value("${alto.data.num_topics:5}")
+    int numTopics;
 
-	public static HashMap<String, HashMap<Integer, Float>> features;
-	public static HashMap<String, ArrayList<String>> docIdToHighestTopic;
-	public static HashMap<String, ArrayList<DocProb>> topicToDocs;
-	public static HashMap<String, ArrayList<String>> highestDocs;//topic index to highest doc in that topic that is being displayed
+    @Value("${alto.data.num_top_docs:100}")
+    int numTopDocs;
+
+    String outputDir;
+    String inputData;
+    String outputName;
+    String vocabFile;
+    String featureFileDir;
+    String urlFile;
+    String summaryFile;
+    String absOutputDir;
+    
+    public ArrayList<String> allInitialTopDocs = new ArrayList<>();//all of the top documents displayed in the beginning
+
+    public static HashMap<String, HashMap<Integer, Float>> features;
+    public static HashMap<String, ArrayList<String>> docIdToHighestTopic;
+    public static HashMap<String, ArrayList<DocProb>> topicToDocs;
+    public static HashMap<String, ArrayList<String>> highestDocs;//topic index to highest doc in that topic that is being displayed
     private String modelDocsFile;
     private String modelTopicWordsFile;
     private String shuffledTopDocsFile;
 
-	public TopicModeling() {
-
-	}
+    public TopicModeling() { }
 
     @PostConstruct
     void init() throws IOException, ErrorForUI {
@@ -57,8 +61,8 @@ public class TopicModeling {
         highestDocs = new HashMap<>(); //topic index to highest doc in that topic that is being displayed
 
         String resultsBaseDir = String.format("%1$s/%2$s", this.dataDirectory, this.corpusName);
-		String inputDir = String.format("%1$s/input", resultsBaseDir, this.corpusName);
-		String absTopicDir = String.format("%1$s/output/T%2$s", resultsBaseDir, Constants.NUM_TOPICS);
+        String inputDir = String.format("%1$s/input", resultsBaseDir, this.corpusName);
+        String absTopicDir = String.format("%1$s/output/T%2$s", resultsBaseDir, numTopics);
 
         this.absOutputDir = absTopicDir + "/init";
 
@@ -176,7 +180,7 @@ public class TopicModeling {
 					} else {
 						docs = topicDocs.get(tt);
 					}
-					if (probs[tt] > (double)1/(double)(Constants.NUM_TOPICS)) {//Forough changed from 0 to 0.1 to consider a doc to have a topic if prob > uniform
+					if (probs[tt] > (double)1/(double)(numTopics)) {//Forough changed from 0 to 0.1 to consider a doc to have a topic if prob > uniform
 						DocProb doc = new DocProb(id, probs[tt]);
 						docs.add(doc);
 					}
@@ -208,7 +212,7 @@ public class TopicModeling {
 			String strLine;
 		
 			HashMap<Integer, HashMap<String, Double>> topicWordToWeights = new HashMap<Integer, HashMap<String, Double>>();
-			for(int i = 0 ; i < Constants.NUM_TOPICS; i++){
+			for(int i = 0 ; i < numTopics; i++){
 				topicWordToWeights.put(i, new HashMap<>());
 			}
 			while ((strLine = bufferedReader.readLine()) != null) {
@@ -394,13 +398,13 @@ public class TopicModeling {
 		}
 		topicJson += "], ";
 		topicJson = topicJson.replace("}, ], ", "} ], ");
-		return  "{ " + docJson + topicJson + "\"corpusname\":\"" + this.corpusName +"\",\"topicsnum\":\""+ Constants.NUM_TOPICS+ "\"}";
+		return  "{ " + docJson + topicJson + "\"corpusname\":\"" + this.corpusName +"\",\"topicsnum\":\""+ numTopics+ "\"}";
 	}
 
 	public void loadTopicProbs(HashMap<String, ArrayList<String>> docIdToHighestTopic, HashMap<String, ArrayList<String>> highestDocs,
 			HashMap<String, ArrayList<DocProb>> topicToDocs) throws NumberFormatException, IOException{
 		//reads the model.doc file and loads doc to highest <topic,prob>
-		for(int i = 0 ; i < Constants.NUM_TOPICS; i++){
+		for(int i = 0 ; i < numTopics; i++){
 			ArrayList<DocProb> docs = new ArrayList<>();
 			topicToDocs.put(String.valueOf(i), docs);
 		}
@@ -441,19 +445,19 @@ public class TopicModeling {
             }
             // sort topic docs based on probability
             //String topicIndex;
-            for (int i = 0; i < Constants.NUM_TOPICS; i++) {
+            for (int i = 0; i < numTopics; i++) {
                 topicIndex = String.valueOf(i);
                 ArrayList<DocProb> array = topicToDocs.get(topicIndex);
                 Collections.sort(array);
                 topicToDocs.put(topicIndex, array);
             }
-            for (int i = 0; i < Constants.NUM_TOPICS; i++) {
+            for (int i = 0; i < numTopics; i++) {
                 topicIndex = String.valueOf(i);
                 ArrayList<String> topicHighestDocs = new ArrayList<String>();
                 int k = 0;
                 for (DocProb docObj1 : topicToDocs.get(topicIndex)) {//for all docs in that topic
                     String docId = docObj1.id;
-                    if (k < Constants.TOPIC_DOC_NUM) {
+                    if (k < numTopDocs) {
                         topicHighestDocs.add(docId);
                         k++;
                     }

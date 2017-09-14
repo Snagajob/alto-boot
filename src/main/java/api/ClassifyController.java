@@ -31,6 +31,18 @@ public class ClassifyController {
     @Value("${alto.data.base_dir:/usr/local/alto-boot}")
     String dataDirectory;
 
+    @Value("${alto.data.words_per_topic:20}")
+    int wordsNumPerTopic;
+
+    @Value("${alto.data.top_docs_per_topic:20}")
+    int docsNumPerTopic;
+
+    @Value("${alto.data.num_topics:5}")
+    int numTopics;
+
+    @Value("${alto.data.num_top_docs:100}")
+    int numTopDocs;
+
     class ValueComparator implements Comparator<String> {//comparator to sort a treemap based on values
 
         HashMap<String, Double> base;
@@ -50,7 +62,6 @@ public class ClassifyController {
         }
     }
 
-    private String baseDir;
     public static ArrayList<String> ids;
     public static HashMap<String, ArrayList<String>> topLabelToIds;
     public static ArrayList<String> allTopLabelDocuments = null;
@@ -60,9 +71,6 @@ public class ClassifyController {
     @RequestMapping("Classify")
     public void classifyRoute(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         //TODO: migrate the low level servlet interface to autobinded function parameters.
-        this.baseDir = util.Constants.RESULT_DIR;
-        String corpusName = util.Constants.CORPUS_NAME;
-        int numTopics = util.Constants.NUM_TOPICS;
 
         String min = req.getParameter("min");
         String sec = req.getParameter("sec");
@@ -545,8 +553,7 @@ public class ClassifyController {
             goldenLabelToIds, HttpServletRequest req) throws IOException{
         //fills in goldenLabelToIds and idToGoldenLabel
         //updates userLabelToIds based on those documents that their label is null in the file
-        //String dir = backend + util.Constants.CORPUS_NAME+"/input/" + util.Constants.CORPUS_NAME+".gold";
-        String dir = util.Constants.ABS_BASE_DIR+"results/"+util.Constants.CORPUS_NAME+"/input/" + util.Constants.CORPUS_NAME+".gold";
+        String dir = dataDirectory+"/"+corpusName+"/input/" +corpusName+".gold";
 
         if(!util.Util.checkExist(dir)){
             System.out.println("No gold label file found.");
@@ -618,7 +625,10 @@ public class ClassifyController {
                          HashMap<String, HashSet<String>> userLabelToIds, HashMap<String, Integer> labelStrToInt, String userName,
                          String corpusName, double purity, String loggingMode, boolean isFinal, String finalEvent, String min, String sec) throws IOException{
         long time = System.currentTimeMillis();
-        String dir = util.Constants.RESULT_DIR+corpusName+"/log/";
+
+        String dir = dataDirectory+"/"+corpusName+"/log/";
+        util.Util.creatDir(dir);
+
         String fileName = "";
         if(loggingMode.equals("classifier")){
             String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
@@ -752,7 +762,7 @@ public class ClassifyController {
             sortedIdToProbMap.putAll(idToProbMap);
             int cnt = 1;
             for(String id:sortedIdToProbMap.keySet()){
-                if(cnt > util.Constants.NUM_TOP_DOCS)
+                if(cnt > numTopDocs)
                     break;
                 if(testingIdToLabelMap.get(id).equals(labelStr)){//if the label of top document is the current label
                     topLabelDocuments.get(labelStr).add(id);

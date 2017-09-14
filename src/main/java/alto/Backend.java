@@ -6,7 +6,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.WebApplicationContext;
-import util.Constants;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -18,6 +17,9 @@ public class Backend {
     @Value("${alto.data.corpus_name:synthetic}")
     String corpusName;
 
+    @Value("${alto.data.num_topics:5}")
+    int numTopics;
+
     @Autowired
     HttpServletRequest req;
 
@@ -26,7 +28,7 @@ public class Backend {
 
 	public String newSession(String username) throws IOException, ErrorForUI {
 		String json="";
-		System.out.println(String.format("Creating new session: corpus: %s, username: %s, topicsnum: %s", corpusName, username, Constants.NUM_TOPICS));
+		System.out.println(String.format("Creating new session: corpus: %s, username: %s, topicsnum: %s", corpusName, username, numTopics));
 		this.treeTM.initializeData();
 		json = this.treeTM.changeFormat();
 		return json;

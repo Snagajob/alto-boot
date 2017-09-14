@@ -2,4 +2,13 @@
 .idea
 build
 *.iml
-application-local.propertie
+application-local.properties
+data/
+text_data/
+*.log
+*.swp
+*.swo
+.DS_Store
+.idea
+*.pkl
+
