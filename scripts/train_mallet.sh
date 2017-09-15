@@ -14,6 +14,14 @@ $MALLET_HOME/mallet import-dir \
     --keep-sequence-bigrams \
     --extra-stopwords $BASEDIR/nlp_resources/stopwords.lex
 
+NUM_DOCS=$(ls ${BASEDIR}/text_data/${CORPUS} | wc -l)
+PRUNE_COUNT=$(($NUM_DOCS/1000))
+
+$MALLET_HOME/mallet prune \
+    --input $BASEDIR/data/$CORPUS/input/$CORPUS-topic-input.mallet \
+    --output $BASEDIR/data/$CORPUS/input/$CORPUS-topic-input-pruned.mallet \
+    --prune-count $PRUNE_COUNT
+
 mkdir -p $BASEDIR/data/$CORPUS/output/T${NUMTOPICS}/init/ 
 
 $MALLET_HOME/mallet train-topics \
