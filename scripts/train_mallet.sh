@@ -14,21 +14,22 @@ $MALLET_HOME/mallet import-dir \
     --keep-sequence-bigrams \
     --extra-stopwords $BASEDIR/nlp_resources/stopwords.lex
 
-NUM_DOCS=$(ls ${BASEDIR}/text_data/${CORPUS} | wc -l)
-PRUNE_COUNT=$(($NUM_DOCS/1000))
-
 $MALLET_HOME/mallet prune \
     --input $BASEDIR/data/$CORPUS/input/$CORPUS-topic-input.mallet \
     --output $BASEDIR/data/$CORPUS/input/$CORPUS-topic-input-pruned.mallet \
-    --prune-count $PRUNE_COUNT
+    --max-idf 6.5 \
+    --min-idf 0.05
 
 mkdir -p $BASEDIR/data/$CORPUS/output/T${NUMTOPICS}/init/ 
 
 $MALLET_HOME/mallet train-topics \
     --input $BASEDIR/data/$CORPUS/input/$CORPUS-topic-input.mallet \
-    --output-doc-topics $BASEDIR/data/$CORPUS/output/T${NUMTOPICS}/init/model.docs \
+    --output-doc-topics $BASEDIR/data/$CORPUS/output/T${NUMTOPICS}/init/model.docs.new \
     --topic-word-weights-file $BASEDIR/data/$CORPUS/output/T${NUMTOPICS}/init/model.topics \
     --num-topics $NUMTOPICS \
-    --optimize-interval 10 \
     --num-threads $NUM_THREADS
+
+python $BASEDIR/scripts/convert_model_docs.py \
+    $BASEDIR/data/$CORPUS/output/T${NUMTOPICS}/init/model.docs.new \
+    $BASEDIR/data/$CORPUS/output/T${NUMTOPICS}/init/model.docs
 
