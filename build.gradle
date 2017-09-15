@@ -1,6 +1,10 @@
 plugins {
     id 'org.springframework.boot' version '1.5.6.RELEASE'
-    id 'java' sourceCompatibility '1.8' targetCompatibility 1.8
+    id 'java'
+}
+
+compileJava {
+    sourceCompatibility '1.8'
 }
 
 group 'alto'
@@ -13,6 +17,8 @@ springBoot {
 repositories {
     mavenCentral()
 }
+
+
 
 dependencies {
     compile("org.springframework.boot:spring-boot-starter-web:1.5.6.RELEASE")
