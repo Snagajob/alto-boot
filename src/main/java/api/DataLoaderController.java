@@ -50,7 +50,6 @@ public class DataLoaderController {
 		String username = req.getParameter("username");
 		json = backend.newSession(username);
 		
-		System.out.println(json);
 		response.setContentType("application/json");
 		response.setCharacterEncoding("UTF-8");
 
