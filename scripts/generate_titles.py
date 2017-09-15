@@ -17,7 +17,8 @@ def json_to_posting_title(posting_id):
                 {"_id":"{}".format(posting_id)},
                 {"jt":1}
             )
-    posting["jt"] = posting["jt"].replace("#", "").replace("\n"," ")
+    posting["jt"] = posting["jt"].replace("#", "").replace("\n"," ").replace("\\"," ")\
+            .replace("/"," ").replace("&", "and").replace('"',"")
     return '{_id}#{jt}\n'.format(** posting)
 
 
