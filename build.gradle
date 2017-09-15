@@ -1,6 +1,6 @@
 plugins {
     id 'org.springframework.boot' version '1.5.6.RELEASE'
-    id 'java'
+    id 'java' sourceCompatibility '1.8' targetCompatibility 1.8
 }
 
 group 'alto'
@@ -9,8 +9,6 @@ version '1.0-SNAPSHOT'
 springBoot {
     mainClass = "AltoApplication"
 }
-
-sourceCompatibility = 1.8
 
 repositories {
     mavenCentral()
