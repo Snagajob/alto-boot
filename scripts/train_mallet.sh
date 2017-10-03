@@ -28,6 +28,8 @@ $MALLET_HOME/mallet train-topics \
     --topic-word-weights-file $BASEDIR/data/$CORPUS/output/T${NUMTOPICS}/init/model.topics \
     --num-topics $NUMTOPICS \
     --num-threads $NUM_THREADS \
+    --optimize-interval 10 \
+    --optimize-burn-in 200 \
     --output-model $BASEDIR/data/$CORPUS/output/T${NUMTOPICS}/init/trained-model.mallet 
 
 python $BASEDIR/scripts/convert_model_docs.py \
