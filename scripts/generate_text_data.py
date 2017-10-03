@@ -8,6 +8,8 @@ from pymongo import MongoClient
 import html2text
 import re
 import signal
+import csv
+from collections import Counter
 
 def worker_init(outpath_in, mongo_host):
     global header_pattern
@@ -21,15 +23,21 @@ def worker_init(outpath_in, mongo_host):
     outpath = outpath_in
     client = MongoClient(host=mongo_host)
 
-    global stops
     global noisy_paragraphs
-    stops = load_stopwords()
+    global place_names
     noisy_paragraphs = load_noisy_paragraphs()
+    place_names = load_place_names()
 
 
 def scrub(text):
-    for paragraph in noisy_paragraphs:
-        text = text.replace(paragraph, "")
+    text = "\n".join(p for p in text.split("\n") if p not in noisy_paragraphs)
+    for place_name in place_names:
+        text = text.replace(" "+place_name, " __LOCATION__")
+        text = text.replace(place_name+" ", "__LOCATION__ ")
+        text = text.replace(place_name+".", "__LOCATION__.")
+        text = text.replace(place_name+".", "__LOCATION__,")
+        text = text.replace(place_name+"!", "__LOCATION__!")
+        text = text.replace(place_name+"\n", "__LOCATION__\n")
     text = text.replace("part time", "part-time")
     text = text.replace("full time", "full-time")
     text = text.replace("parttime", "part-time")
@@ -42,17 +50,17 @@ def scrub(text):
     return text
 
 
-def load_stopwords(stopwords_path="./nlp_resources/stopwords.lex"):
-    with open(stopwords_path, "r") as f:
-        stopwords = {w.strip("\n") for w in f.readlines()}
-    return stopwords
-
-
-def load_noisy_paragraphs(noisy_paragraphs_path="./nlp_resources/noisy_paragraphs.lex"):
+def load_noisy_paragraphs(noisy_paragraphs_path="./nlp_resources/noisy_paragraphs.lexicon"):
     with open(noisy_paragraphs_path, "r") as f:
         noisy_paragraphs = {p.strip("\n") for p in f.readlines()}
     return noisy_paragraphs
 
+
+def load_place_names(place_names_path="./nlp_resources/place_names.lexicon"):
+    with open(place_names_path, "r") as f:
+        place_names = {p.strip("\n") for p in f.readlines()}
+    return place_names
+    
 
 def json_to_corpus_text(posting_id):
     h2t = html2text.HTML2Text()
@@ -69,7 +77,7 @@ def json_to_corpus_text(posting_id):
             )
 
     with open("{}/{}".format(outpath, posting["_id"]), "w") as f:
-            f.write(posting["jt"]+"\n\n")
+            f.write(scrub(posting["jt"])+"\n\n")
             f.write(scrub(h2t.handle(posting["jd"])))
             f.write("\n\n")
             f.write(scrub(h2t.handle(posting.get("jr",""))))

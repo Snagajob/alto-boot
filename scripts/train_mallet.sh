@@ -12,7 +12,7 @@ $MALLET_HOME/mallet import-dir \
     --skip-html TRUE \
     --gram-sizes 1,2 \
     --keep-sequence-bigrams \
-    --extra-stopwords $BASEDIR/nlp_resources/stopwords.lex
+    --extra-stopwords $BASEDIR/nlp_resources/stopwords.lexicon
 
 $MALLET_HOME/mallet prune \
     --input $BASEDIR/data/$CORPUS/input/$CORPUS-topic-input-all.mallet \

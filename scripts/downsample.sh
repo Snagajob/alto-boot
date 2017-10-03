@@ -14,13 +14,9 @@ TEXTDATAPATH="$BASEDIR/text_data/${CORPUS}_sample/"
 INPUTPATH="${BASEDIR}/data/${CORPUS}_sample/input/"
 OUTPUTPATH="${BASEDIR}/data/${CORPUS}_sample/output/T${NUMTOPICS}/init/"
 
-rm -r $TEXTDATAPATH
-rm -r ${BASEDIR}/data/${CORPUS}_sample/
-
 mkdir -p $TEXTDATAPATH
 mkdir -p $INPUTPATH
 mkdir -p $OUTPUTPATH
-
 
 python $BASEDIR/scripts/filter_model_docs.py \
     $BASEDIR/data/$CORPUS/output/T${NUMTOPICS}/init/model.topics \
