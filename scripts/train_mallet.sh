@@ -6,7 +6,7 @@ NUM_THREADS=$5
 
 $MALLET_HOME/mallet import-dir \
     --input $BASEDIR/text_data/$CORPUS \
-    --output $BASEDIR/data/$CORPUS/input/$CORPUS-topic-input.mallet \
+    --output $BASEDIR/data/$CORPUS/input/$CORPUS-topic-input-all.mallet \
     --remove-stopwords TRUE \
     --keep-sequence TRUE \
     --skip-html TRUE \
@@ -15,8 +15,8 @@ $MALLET_HOME/mallet import-dir \
     --extra-stopwords $BASEDIR/nlp_resources/stopwords.lex
 
 $MALLET_HOME/mallet prune \
-    --input $BASEDIR/data/$CORPUS/input/$CORPUS-topic-input.mallet \
-    --output $BASEDIR/data/$CORPUS/input/$CORPUS-topic-input-pruned.mallet \
+    --input $BASEDIR/data/$CORPUS/input/$CORPUS-topic-input-all.mallet \
+    --output $BASEDIR/data/$CORPUS/input/$CORPUS-topic-input.mallet \
     --max-idf 6.5 \
     --min-idf 0.2
 
