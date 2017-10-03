@@ -15,8 +15,7 @@ INPUTPATH="${BASEDIR}/data/${CORPUS}_sample/input/"
 OUTPUTPATH="${BASEDIR}/data/${CORPUS}_sample/output/T${NUMTOPICS}/init/"
 
 rm -r $TEXTDATAPATH
-rm -r $INPUTPATH
-rm -r $OUTPUTPATH
+rm -r ${BASEDIR}/data/${CORPUS}_sample/
 
 mkdir -p $TEXTDATAPATH
 mkdir -p $INPUTPATH
@@ -26,7 +25,8 @@ python $BASEDIR/scripts/filter_model_docs.py \
     $BASEDIR/data/$CORPUS/output/T${NUMTOPICS}/init/model.topics \
     $BASEDIR/data/${CORPUS}_sample/output/T${NUMTOPICS}/init/model.topics &
 
-python $BASEDIR/scripts/downsample_posting_ids.py ${SAMPLE_IDS_PATH} \
+python $BASEDIR/scripts/downsample_by_topics.py \
+    $BASEDIR/data/$CORPUS/output/T${NUMTOPICS}/init/model.docs \
     ${INPUTPATH}/posting_ids.pkl $DOWNSAMPLE_SIZE
 
 python $BASEDIR/scripts/downsample_model_docs.py \
