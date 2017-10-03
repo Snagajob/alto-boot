@@ -21,13 +21,13 @@ mkdir -p $TEXTDATAPATH
 mkdir -p $INPUTPATH
 mkdir -p $OUTPUTPATH
 
-python scripts/generate_text_data.py ${SAMPLE_IDS_PATH} ${TEXTDATAPATH} \
-    ${MONGO_USER} ${MONGO_PW} ${MONGO_HOST} ${MONGO_PORT} ${MONGO_DB} &
 python scripts/generate_html.py ${SAMPLE_IDS_PATH} ${BASEDIR}/data/${CORPUS}.html \
     ${MONGO_USER} ${MONGO_PW} ${MONGO_HOST} ${MONGO_PORT} ${MONGO_DB} &
 python scripts/generate_titles.py ${SAMPLE_IDS_PATH} ${BASEDIR}/data/${CORPUS}.titles \
     ${MONGO_USER} ${MONGO_PW} ${MONGO_HOST} ${MONGO_PORT} ${MONGO_DB} &
 python scripts/generate_url.py $CORPUS ${SAMPLE_IDS_PATH} ${INPUTPATH}/${CORPUS}.url &
+python scripts/generate_text_data.py ${SAMPLE_IDS_PATH} ${TEXTDATAPATH} \
+    ${MONGO_USER} ${MONGO_PW} ${MONGO_HOST} ${MONGO_PORT} ${MONGO_DB} 
 
 wait
 
