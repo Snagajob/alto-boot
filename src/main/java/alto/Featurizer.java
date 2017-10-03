@@ -60,7 +60,7 @@ public class Featurizer{
 			File[] listOfFiles = folder.listFiles();
 			for(int i = 0 ; i < listOfFiles.length; i++){
                             
-				//System.out.println("Featurizing file :"+listOfFiles[i].getName());
+				System.out.println("Featurizing file :"+listOfFiles[i].getName());
 				ids.add(listOfFiles[i].getName());
 				extractFeatures(listOfFiles[i].getName(), writer);
 			}
