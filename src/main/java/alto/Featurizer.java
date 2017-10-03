@@ -14,7 +14,7 @@ import java.util.function.Supplier;
 // docid 1:count 2:count ...
 //bag of words + topics
 
-@Component
+//@Component
 public class Featurizer{
 	
 	public ArrayList<String> ids = new ArrayList<>();
@@ -24,23 +24,27 @@ public class Featurizer{
 	public HashMap<String, Integer> vocabToIndex = new HashMap<>();
 	public TreeMap<Integer, String> indexToVocab = new TreeMap<>();
 
-        @Value("${alto.data.base_dir:/usr/local/alto-boot}")
+        //@Value("${alto.data.base_dir:/usr/local/alto-boot}")
         String dataDirectory;
 
-        @Value("${alto.data.corpus_name:synthetic}")
+        //@Value("${alto.data.corpus_name:synthetic}")
         String corpusName;
 
-        @Value("${alto.data.source_text_dir}")
+        //@Value("${alto.data.source_text_dir}")
         String sourceTextDirectory;
 
-        @Value("${alto.data.num_topics:5}")
+        //@Value("${alto.data.num_topics:5}")
         int numTopics;
 
-	public void featurize(String featuresDir) throws IOException{
+	public void featurize(String featuresDir, String dataDirectory, String corpusName, String sourceTextDir, int numTopics) throws IOException{
+            this.dataDirectory = dataDirectory;
+            this.corpusName = corpusName;
+            this.sourceTextDirectory = sourceTextDir;
+            this.numTopics = numTopics;
 
         //TODO: this should be done as a pre-processing step, so i'm leaving this code largely alone..
 		if(util.Util.checkExist(featuresDir))
-			return;
+                    return;
 
 		Writer writer = null;
 		writer = new BufferedWriter(new OutputStreamWriter(
@@ -50,11 +54,12 @@ public class Featurizer{
 		fillVocab();
 		if(ids.size() == 0){
 			//getting doc ids
-			String dir = this.sourceTextDirectory;
+			String dir = this.sourceTextDirectory + "/" + corpusName;
 
 			File folder = new File(dir);
 			File[] listOfFiles = folder.listFiles();
 			for(int i = 0 ; i < listOfFiles.length; i++){
+                            
 				System.out.println("Featurizing file :"+listOfFiles[i].getName());
 				ids.add(listOfFiles[i].getName());
 				extractFeatures(listOfFiles[i].getName(), writer);
@@ -84,6 +89,8 @@ public class Featurizer{
 		String dir = sourceTextDirectory + "/" + corpusName;
 		File folder = new File(dir);
 		File[] listOfFiles = folder.listFiles();
+                System.out.println(dir);
+                System.out.println(listOfFiles);
 
 		if (idToTextMap.keySet().size() == 0) {
 			idToTextMap = new TreeMap<String, String>();
@@ -104,6 +111,7 @@ public class Featurizer{
 	}
 
 	public void extractFeatures(String id, Writer writer) throws IOException{
+                System.out.println(id);
 		// gets an id and creates a map from vocab index to their count as a feature
 		TreeMap<Integer, Integer> indexToFreqMap = new TreeMap<Integer, Integer>();
 		String text = idToTextMap.get(id);

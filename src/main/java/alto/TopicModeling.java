@@ -20,6 +20,9 @@ public class TopicModeling {
     @Value("${alto.data.base_dir:/usr/local/alto-boot}")
     String dataDirectory;
 
+    @Value("${alto.data.source_text_dir}")
+    String sourceTextDirectory;
+
     @Value("${alto.data.words_per_topic:20}")
     int wordsNumPerTopic;
 
@@ -475,7 +478,7 @@ public class TopicModeling {
 
 	public void loadFeatures(HashMap<String, HashMap<Integer, Float>> features) throws ErrorForUI, NumberFormatException, IOException {
 		Featurizer ff = new Featurizer();
-		ff.featurize(this.featureFileDir);
+		ff.featurize(this.featureFileDir, this.dataDirectory, this.corpusName, this.sourceTextDirectory, this.numTopics);
 		System.out.print("loading features...");
 
 
