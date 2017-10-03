@@ -60,7 +60,7 @@ public class Featurizer{
 			File[] listOfFiles = folder.listFiles();
 			for(int i = 0 ; i < listOfFiles.length; i++){
                             
-				System.out.println("Featurizing file :"+listOfFiles[i].getName());
+				//System.out.println("Featurizing file :"+listOfFiles[i].getName());
 				ids.add(listOfFiles[i].getName());
 				extractFeatures(listOfFiles[i].getName(), writer);
 			}
@@ -111,7 +111,6 @@ public class Featurizer{
 	}
 
 	public void extractFeatures(String id, Writer writer) throws IOException{
-                System.out.println(id);
 		// gets an id and creates a map from vocab index to their count as a feature
 		TreeMap<Integer, Integer> indexToFreqMap = new TreeMap<Integer, Integer>();
 		String text = idToTextMap.get(id);
