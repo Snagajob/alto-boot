@@ -15,6 +15,6 @@ $MALLET_HOME/mallet import-dir \
 $MALLET_HOME/mallet prune \
     --input $BASEDIR/data/$CORPUS/input/$CORPUS-topic-input-all.mallet \
     --output $BASEDIR/data/$CORPUS/input/$CORPUS-topic-input.mallet \
-    --max-idf 6.5 \
-    --min-idf 0.2
+    --max-idf 7.5 \
+    --min-idf 0.1
 

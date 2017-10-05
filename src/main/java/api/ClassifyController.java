@@ -437,11 +437,12 @@ public class ClassifyController {
             TreeMap<String,Double> sortedIdToUncertainty = new TreeMap<String,Double>(vc);
             sortedIdToUncertainty.putAll(docIdToUncertainty.get(topicIndex));
             //find median
+            double uncertaintyMed;
             try {
-                double uncertaintyMed = getMedianUncertainty(sortedIdToUncertainty);
+                uncertaintyMed = getMedianUncertainty(sortedIdToUncertainty);
             } catch (IndexOutOfBoundsException e) {
                 System.out.println("getMedianUncertainty error, topic "+topicIndex+":\n"+sortedIdToUncertainty.toString());
-                double uncertaintyMed = 0.0;
+                uncertaintyMed = 0.0;
             }
             int numLabeled = 0;
             if(labeledDocs.containsKey(topicIndex))

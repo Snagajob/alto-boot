@@ -477,40 +477,44 @@ public class TopicModeling {
 
 
 	public void loadFeatures(HashMap<String, HashMap<Integer, Float>> features) throws ErrorForUI, NumberFormatException, IOException {
-		Featurizer ff = new Featurizer();
-		ff.featurize(this.featureFileDir, this.dataDirectory, this.corpusName, this.sourceTextDirectory, this.numTopics);
-		System.out.print("loading features...");
+            Featurizer ff = new Featurizer();
+            ff.featurize(this.featureFileDir, this.dataDirectory, this.corpusName, this.sourceTextDirectory, this.numTopics);
+            System.out.print("loading features...");
 
 
-        FileInputStream fis = new FileInputStream(this.featureFileDir);
-        BufferedReader br = new BufferedReader(new InputStreamReader(fis));
+            FileInputStream fis = new FileInputStream(this.featureFileDir);
+            BufferedReader br = new BufferedReader(new InputStreamReader(fis));
 
-		String strLine;
-		int numFeatures = 0;
-		HashMap<Integer, Float> indexToFeature;
-		String[] items; String id;String[] f;
-		while((strLine = br.readLine()) != null){
-			indexToFeature = new HashMap<Integer, Float>();
-			items = strLine.split("\\s+", 2);
-			id = items[0];
-			f = items[1].split("\\s+");
-			String[] data;
-			int featureIndex = 0;
-			for(String tuple : f){
-				data = tuple.split(":");
-				featureIndex = Integer.parseInt(data[0])-1;//-1 to start from 0
-				float featureVal = Float.parseFloat(data[1]);
-				indexToFeature.put(featureIndex, featureVal);
-				numFeatures = featureIndex+1;//last index
-			}
+            String strLine;
+            int numFeatures = 0; 
+            HashMap<Integer, Float> indexToFeature;
+            String[] items; String id;String[] f;
+            while((strLine = br.readLine()) != null){
+                indexToFeature = new HashMap<Integer, Float>();
+                items = strLine.split("\\s+", 2);
+                id = items[0];
+                f = items[1].split("\\s+");
+                String[] data;
+                int featureIndex = 0;
+                for(String tuple : f){
+                        data = tuple.split(":");
+                        featureIndex = Integer.parseInt(data[0])-1;//-1 to start from 0
+                        float featureVal = Float.parseFloat(data[1]);
+                        indexToFeature.put(featureIndex, featureVal);
+                        if(featureIndex+1 > numFeatures){
+                            numFeatures = featureIndex+1;//last index
+                        }
+                }
 
-			//add zero feature for #labeled docs in the highest Topic
-			indexToFeature.put(numFeatures, (float) 0.0);
-			features.put(id, indexToFeature);
-		}
-		normalizeFeatures(features, numFeatures+1);
-		br.close();
+                //add zero feature for #labeled docs in the highest Topic
+                indexToFeature.put(numFeatures, (float) 0.0);
+                features.put(id, indexToFeature);
+            }
+            System.out.println("NUMBER OF FEATURES: "+String.valueOf(numFeatures));
+            normalizeFeatures(features, numFeatures+1);
+            br.close();
 	}
+
 	public void normalizeFeatures(HashMap<String, HashMap<Integer, Float>> features, int numFeatures) {
 		double[] featMaxVal = new double[numFeatures];
 		for (int i = 0; i < numFeatures; i++) {
