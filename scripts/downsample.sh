@@ -45,7 +45,7 @@ python scripts/generate_url.py ${CORPUS}_sample ${INPUTPATH}/posting_ids.pkl ${I
 python scripts/generate_text_data.py ${INPUTPATH}/posting_ids.pkl ${TEXTDATAPATH} \
     ${MONGO_USER} ${MONGO_PW} ${MONGO_HOST} ${MONGO_PORT} ${MONGO_DB} 
 
-bash $BASEDIR/scripts/import_mallet.sh ${CORPUS}_sample $BASEDIR $MALLET_HOME 
+bash $BASEDIR/scripts/import_mallet_downsample.sh ${CORPUS}_sample $BASEDIR $MALLET_HOME 
 
 wait
 
