@@ -84,6 +84,8 @@ public class DisplayDataController {
                     id = strLine.substring(i + 4, strLine.length() - 2);
                     ids.add(id);
                     texts.add("");
+                    System.out.println(ids.size());
+                    System.out.println(texts.size());
                 }
             }
 
@@ -112,6 +114,8 @@ public class DisplayDataController {
                     while (!(line = br.readLine()).equals("</p>")) {
                         text += " " + line;
                     }
+                    System.out.println(texts.size());
+                    System.out.println(index);
                     texts.set(index, text);
                 }
             }
