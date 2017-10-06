@@ -5,20 +5,22 @@ from sklearn.externals import joblib
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.datasets import dump_svmlight_file
+from pymongo import MongoClient
 import scipy.sparse as sp
 import os
+import multiprocessing as mp
 
-def load_doc(doc_id, corpus):
-    with open("text_data/{}/{}".format(corpus, doc_id)) as f:
+def load_doc(posting_id, corpus):
+    with open("text_data/{}/{}".format(corpus, posting_id)) as f:
         return f.read()
 
 
 def parse_topic_scores(l):
     d = l.split("\t")
-    doc_id = d[1].split("/")[-1]
+    posting_id = d[1].split("/")[-1]
     scores = d[2:]
     scores = {scores[i]:float(scores[i+1]) for i in range(0,len(scores),2)}
-    return doc_id, scores
+    return posting_id, scores
 
 
 def load_topic_scores(corpus, num_topics):
@@ -41,12 +43,22 @@ def worker_init(mongo_host):
     client = MongoClient(host=mongo_host)
 
 
-def get_metadata_features(doc_id):
+def get_metadata_features(posting_id):
     posting = client.get_database("posting").get_collection("posting").find_one(
             {"_id":"{}".format(posting_id)},
             {"bid":1, "i":1, "cls":1}
             )
-    return posting
+    posting_metadata_features = dict()
+    posting_metadata_features["brand_id"] = posting.get("bid")
+    for cls in posting.get("cls", []):
+        posting_metadata_features[cls["cn"]] = cls["s"]
+    for i in posting.get("i", []):
+        if i["n"] != "Other":
+            if i["p"] == True:
+                posting_metadata_features[i["n"]] = 1.0
+            elif i["p"] == False:
+                posting_metadata_features[i["n"]] = 0.5
+    return posting_metadata_features
 
 
 if __name__ == "__main__":
@@ -68,22 +80,26 @@ if __name__ == "__main__":
             database=args.mongo_db
     )
         
-    corpus = "samp"
-    num_topics = 10
 
-    doc_ids = sorted(os.listdir("text_data/{}/".format(corpus)))
-    token_vec = TfidfVectorizer(ngram_range=(1,2), min_df=int(0.01*len(doc_ids)))
+    posting_ids = sorted(os.listdir("text_data/{}/".format(args.corpus)))
 
-    X_tokens = token_vec.fit_transform((load_doc(doc_id, corpus) for doc_id in doc_ids))
-    topic_vec, X_topics = load_topic_scores(corpus, num_topics) 
+    metadata_vec = DictVectorizer(sparse=True, dtype=float)
+    with mp.Pool(mp.cpu_count(), worker_init, (mongo_host,)) as p:
+        X_metadata = metadata_vec.fit_transform(p.imap(get_metadata_features, posting_ids))
 
-    X_feats = sp.hstack([X_tokens, X_topics])
+    token_vec = TfidfVectorizer(ngram_range=(1,2), min_df=20, max_df=0.9, stop_words="english")
+    X_tokens = token_vec.fit_transform((load_doc(posting_id, args.corpus) for posting_id in posting_ids))
+
+    topic_vec, X_topics = load_topic_scores(args.corpus, args.num_topics) 
+
+    X_feats = sp.hstack([X_tokens, X_metadata, X_topics])
     print(X_feats.shape)
 
-    dump_svmlight_file(X_feats.toarray(), [int(doc_id) for doc_id in doc_ids],
-            "data/{}/output/T{}/init/{}.feat".format(corpus, num_topics, corpus),
+    dump_svmlight_file(X_feats, [int(posting_id) for posting_id in posting_ids],
+            "data/{}/output/T{}/init/{}.feat".format(args.corpus, args.num_topics, args.corpus),
             zero_based=False)
 
-    joblib.dump(token_vec, "data/{}/output/T{}/init/{}_token.vec".format(corpus, num_topics, corpus))
-    joblib.dump(topic_vec, "data/{}/output/T{}/init/{}_topic.vec".format(corpus, num_topics, corpus))
+    joblib.dump(token_vec, "data/{}/output/T{}/init/{}_token.vec".format(args.corpus, args.num_topics, args.corpus))
+    joblib.dump(metadata_vec, "data/{}/output/T{}/init/{}_metadata.vec".format(args.corpus, args.num_topics, args.corpus))
+    joblib.dump(topic_vec, "data/{}/output/T{}/init/{}_topic.vec".format(args.corpus, args.num_topics, args.corpus))
 

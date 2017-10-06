@@ -47,5 +47,8 @@ python scripts/generate_text_data.py ${INPUTPATH}/posting_ids.pkl ${TEXTDATAPATH
 
 bash $BASEDIR/scripts/import_mallet_downsample.sh ${CORPUS}_sample_${NUMTOPICS} $BASEDIR $MALLET_HOME 
 
+python $BASEDIR/scripts/featurize.py  ${CORPUS}_sample_${NUMTOPICS} ${NUMTOPICS} \
+    ${MONGO_USER} ${MONGO_PW} ${MONGO_HOST} ${MONGO_PORT} ${MONGO_DB} 
+
 wait
 
