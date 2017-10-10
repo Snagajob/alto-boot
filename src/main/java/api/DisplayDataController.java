@@ -42,19 +42,8 @@ public class DisplayDataController {
         String htmlStr = "";
         if(!isLabelDocs){
             String labelSetStr = req.getParameter("labelSet");
-            htmlStr = getRelatedTexts(req.getParameter("docid"), Integer.parseInt(req.getParameter("numDisplayDocs")),
+            htmlStr = getDocumentDetails(req.getParameter("docid"), Integer.parseInt(req.getParameter("numDisplayDocs")),
                     Boolean.parseBoolean(req.getParameter("newWindow")), Boolean.parseBoolean(req.getParameter("AL"))/*,topTopicWords*/, labelSetStr);
-        }
-        else{
-            String labelDocIdsStr = req.getParameter("labelDocIds");
-            ArrayList<String> labelDocIds = getLabelDocs(labelDocIdsStr);
-            int startIndex = Integer.parseInt(req.getParameter("startIndex"));
-            int endIndex = Integer.parseInt(req.getParameter("endIndex"));
-            int numDocsPerPage = Integer.parseInt(req.getParameter("numDocsPerPage"));
-            String labelName = req.getParameter("labelName");
-            String labelSetStr = req.getParameter("labelSet");
-            boolean isRefreshed = Boolean.parseBoolean(req.getParameter("isRefreshed"));
-            htmlStr = getLabelDocsRelatedTexts(labelDocIds, startIndex, endIndex, numDocsPerPage, labelName,/* allDocsTopTopicWords,*/ labelSetStr, isRefreshed);
         }
 
         resp.setContentType("text/html");
@@ -64,8 +53,7 @@ public class DisplayDataController {
         out.flush();
     }
 
-
-	public ArrayList<String> getLabelDocs(String labelDocIdsStr){
+    public ArrayList<String> getLabelDocs(String labelDocIdsStr){
 		//gets a string of format docid:label,docid:label and returns a list of doc ids of documents having label x
 		ArrayList<String> labelDocIds = new ArrayList<String>();
 		String[] items = labelDocIdsStr.split(",");
@@ -144,116 +132,54 @@ public class DisplayDataController {
 
         return new DisplayData(idToIndex, ids, texts);
 	}
-	public <T> String getLabelDocsRelatedTexts(ArrayList<String> labelDocIds, int startIndex, int endIndex, int numDocsPerPage, String labelName,
-                                               String labelSetStr, boolean isRefreshed){
 
-		String htmlString = "";
-		htmlString += "<html>\n";
-		htmlString += "<head>\n";
-		htmlString += "<script src=\"http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js\"></script>\n";
-		htmlString += "<script type=\"text/javascript\" charset=\"utf-8\" src=\"static/js/Label.js\"></script>\n";
-		htmlString += "<script type=\"text/javascript\" charset=\"utf-8\" src=\"static/js/main.js\"></script>\n";
-		htmlString += "<script type=\"text/javascript\" charset=\"utf-8\" src=\"data/data.js\"></script>\n";
-		htmlString += "<link rel=\"stylesheet\" href=\"data/data.css\">\n";
-		htmlString += "</head>\n";
-	
-		htmlString += "<body onload=\"afterLoad("+numDocsPerPage+",'"+labelName+"','"+labelSetStr+"');mainWindow = window.opener.mainWindow; getLabelViewLoadTime("+isRefreshed+");\">\n";
-		htmlString += "<form name=\"mainForm\">\n";
-		htmlString += "<div align=\"center\" style=\"display:none\" id=\"main\" class=\"main\">\n";
-		for(int i = 0; i < labelDocIds.size() ; i++){
-			String docid = labelDocIds.get(i);
-			htmlString += "<div class = \"segment\"   style=\"border:0px;\" id=\""+docid+"\">\n";
-			htmlString += "<table width=\"100%\">";
-			htmlString += "<tr><td>";
-			htmlString += "<div id='top-part-"+docid+"'\" ></div>";
-			htmlString += "</td></tr>";
-			htmlString += "<tr style=\"outline: 0px solid\"><td width=\"100%\">";
-			htmlString += "<div class = \"segment\" style=\"height:300px; overflow:scroll\" id=\""+docid+"\">";
-			htmlString += "<table>";
-		
-			htmlString += "<tr><td>\n";
-			int docIndex = idToIndex.get(docid);
-			htmlString += texts.get(docIndex)+"\n";
-			htmlString += "</p></td></tr>\n";
-			htmlString += "</table>";
-			htmlString += "</div>\n";
-			
 
-			htmlString += "<tr><td>";
-			htmlString += "<div id=\"low-part-"+docid+"\"></div>";
-			htmlString += "</td></tr>";
-			htmlString += "</table>";
-			if (i == labelDocIds.size()-1)
-				htmlString += "<br /><br /><br /><br />";
-			htmlString += "</div>\n";
-		}
-		//lower part table next and prev and close
-		htmlString += "<table align=\"center\" border=\"0\" style=\"background-color:white; bottom:0px; right:-6px; position:fixed;\" width=\"100%\">";
-		htmlString += "<tr> <td width=\"50%\" align=\"left\"><input type=\"button\" style=\"font-size:100%\" id=\"prevButton\" value=\"show prev 10\"";
-		htmlString += "	onclick=\"load_prev_label_docs('/DisplayData?topic=Labels','"+labelName+"','"+startIndex+"','"+numDocsPerPage +"')\" />";
-		htmlString += "</td>";
-		htmlString += "<td width=\"50%\" align=\"right\"><input type=\"button\" style=\"font-size:100%\" id=\"nextButton\" value=\"show next 10\"";
-		htmlString += "	onclick=\"load_next_label_docs('/DisplayData?topic=Labels','"+labelName+"','"+endIndex+"','"+numDocsPerPage +"')\" />";
-		htmlString += "&nbsp; &nbsp; </td>";
-		htmlString += "</tr>";
 
-		htmlString += "<tr>";
-		htmlString += "<td></td><td align=\"right\"> <input type=\"button\" onclick=\"closeWindowLabelView('"+labelName+"');\" style=\"font-size:100%\" value=\"close\">";
-		htmlString += "&nbsp; &nbsp; </td></tr>";
-		htmlString += "</table>";
-
-		htmlString += "</form>\n";
-		htmlString += "</body>\n";
-		htmlString += "</html>\n";
-		return htmlString;
-	}
-
-	public String getRelatedTexts(String id, int numDisplayDocs, boolean newWindow, boolean AL,/* ArrayList<String> topTopicWords,*/ String labelSetStr){
+	public String getDocumentDetails(String id, int numDisplayDocs, boolean newWindow, boolean AL,/* ArrayList<String> topTopicWords,*/ String labelSetStr){
 		//isSuggestDocs : is the document suggested from active learner
 		//creates an html format string for docs to be displayed
-		String htmlString = "";
-		htmlString += "<html>\n";
-		htmlString += "<head>\n";
-		htmlString += "<script src=\"http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js\"></script>\n";
-		htmlString += "<script type=\"text/javascript\" charset=\"utf-8\" src=\"static/js/Label.js\"></script>\n";
-		htmlString += "<script type=\"text/javascript\" charset=\"utf-8\" src=\"static/js/main.js\"></script>\n";
-		htmlString += "<script type=\"text/javascript\" charset=\"utf-8\" src=\"data/data.js\"></script>\n";
-		htmlString += "<link rel=\"stylesheet\" href=\"data/data.css\">\n";
-		htmlString += "</head>\n";
-		htmlString += "<body onload=\"setTimeout(function(){addDocLabel("+numDisplayDocs+','+false+','+null+",'"+labelSetStr+"');getLoadTime();}, 100); mainWindow = window.opener.mainWindow;\">\n";
+        StringBuffer buf = new StringBuffer();
 
-		htmlString += "<table width=\"100%\">";
-		int idIndex = idToIndex.get((String)id);
-		int startIndex=idIndex;
-		int endIndex=idIndex;
-		htmlString += "<tr><td>";
-		htmlString += "<div id='top-part-"+id+"'\" ></div>";
-		htmlString += "</td></td>";
+		buf.append("<html>\n");
+		buf.append("<head>\n");
+        buf.append("<script src=\"http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js\"></script>\n");
+        buf.append("<script type=\"text/javascript\" charset=\"utf-8\" src=\"static/js/Label.js\"></script>\n");
+        buf.append("<script type=\"text/javascript\" charset=\"utf-8\" src=\"static/js/main.js\"></script>\n");
+        buf.append("<script type=\"text/javascript\" charset=\"utf-8\" src=\"data/data.js\"></script>\n");
+        buf.append("<link rel=\"stylesheet\" href=\"data/data.css\">\n");
+        buf.append("</head>");
+        buf.append("<body onload=\"setTimeout(function(){addDocLabel("+numDisplayDocs+','+false+','+null+",'"+labelSetStr+"');getLoadTime();}, 100); mainWindow = window.opener.mainWindow;\">\n");
+        buf.append("<table width=\"100%\">");
+        buf.append("<tr><td>");
+        buf.append("<div id='top-part-"+id+"'\" ></div>");
+        buf.append("</td></td>");
+        buf.append("<tr><td width=\"100%\">");
+        buf.append("<form name=\"mainForm\">\n");
+        buf.append("<div style=\"display:none\" id=\"main\" class=\"main\">\n");
 
-		htmlString += "<tr><td width=\"100%\">";
-		htmlString += "<form name=\"mainForm\">\n";
-		htmlString += "<div style=\"display:none\" id=\"main\" class=\"main\">\n";
-		for(int i = startIndex; i <= endIndex ; i++){
-			htmlString += "<div class = \"segment\" style=\"height:300px; overflow:scroll;\" id =\""+ids.get(i)+"\">\n";
-			htmlString += "<table>";
-			htmlString += "</div><tr><td>\n";
-			htmlString += texts.get(i)+ "\n";
-			htmlString += "</p></td></tr>\n";
-			htmlString += "</table>";
-			htmlString += "</div>\n";
-		}
-		htmlString += "</div>\n";
-		htmlString += "</td></tr>";
+        int idIndex = idToIndex.get(id);
+        buf.append("<div class = \"segment\" style=\"height:300px; overflow:scroll;\" id =\""+ids.get(idIndex)+"\">\n");
 
-		htmlString += "<tr><td>";
-		htmlString += "<div id=\"low-part-"+id+"\"></div></td></tr>";
 
-		htmlString += "</table>";
-		htmlString += "</form>\n";
+        buf.append("<table>");
+        buf.append("</div><tr><td>\n");
+        buf.append(texts.get(idIndex)+ "\n");
+        buf.append("</p></td></tr>\n");
+        buf.append("</table>");
+        buf.append("</div>\n");
+        buf.append("</div>\n");
+        buf.append("</td></tr>");
 
-		htmlString += "</body>\n";
-		htmlString += "</html>\n";
-		return htmlString;
+        buf.append("<tr><td>");
+        buf.append("<div id=\"low-part-"+id+"\"></div></td></tr>");
+
+        buf.append("</table>");
+        buf.append("</form>\n");
+
+        buf.append("</body>\n");
+        buf.append("</html>\n");
+
+		return buf.toString();
 	}
 
 	private class DisplayData {
