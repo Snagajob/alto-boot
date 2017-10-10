@@ -31,4 +31,5 @@ python scripts/generate_text_data.py ${SAMPLE_IDS_PATH} ${TEXTDATAPATH} \
 
 wait
 
+bash $BASEDIR/scripts/import_mallet.sh $CORPUS $BASEDIR $MALLET_HOME 
 bash $BASEDIR/scripts/train_mallet.sh $CORPUS $BASEDIR $NUMTOPICS $MALLET_HOME $NUM_THREADS_MALLET

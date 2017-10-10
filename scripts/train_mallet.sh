@@ -4,22 +4,6 @@ NUMTOPICS=$3
 MALLET_HOME=$4
 NUM_THREADS=$5
 
-$MALLET_HOME/mallet import-dir \
-    --input $BASEDIR/text_data/$CORPUS \
-    --output $BASEDIR/data/$CORPUS/input/$CORPUS-topic-input-all.mallet \
-    --remove-stopwords TRUE \
-    --keep-sequence TRUE \
-    --skip-html TRUE \
-    --gram-sizes 1,2 \
-    --keep-sequence-bigrams \
-    --extra-stopwords $BASEDIR/nlp_resources/stopwords.lexicon
-
-$MALLET_HOME/mallet prune \
-    --input $BASEDIR/data/$CORPUS/input/$CORPUS-topic-input-all.mallet \
-    --output $BASEDIR/data/$CORPUS/input/$CORPUS-topic-input.mallet \
-    --max-idf 6.5 \
-    --min-idf 0.2
-
 mkdir -p $BASEDIR/data/$CORPUS/output/T${NUMTOPICS}/init/ 
 
 $MALLET_HOME/mallet train-topics \
@@ -32,6 +16,7 @@ $MALLET_HOME/mallet train-topics \
     --optimize-burn-in 200 \
     --num-icm-iterations 50 \
     --num-iterations 1250 \
+    --diagnostics-file $BASEDIR/data/$CORPUS/output/T${NUMTOPICS}/init/model_diagnostics.xml \
     --output-model $BASEDIR/data/$CORPUS/output/T${NUMTOPICS}/init/trained-model.mallet 
 
 python $BASEDIR/scripts/convert_model_docs.py \

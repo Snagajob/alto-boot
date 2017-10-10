@@ -16,8 +16,12 @@ Docker
 Let BASEDIR be the directory of ALTO code.
 
 Please try the synthetic data first:
+
 ### Set constants:
-Open $BASEDIR/src/util/Constants.java, set the ABS_BASE_DIR to the abs path of $BASEDIR/WebContent/results, and TEXT_DATA_DIR to the abs path of $BASEDIR/text_data/synthetic/
+Copy local configuration file template `src/main/resources/config/application-local.properties.template`
+to `src/main/resources/config/application-local.properties` and set `corpus_name`, `base_dir`, 
+`source_text_dir` and `num_topics` to correct local values. 
+
 ### Compile: 
 - `./gradlew assemble`
 

@@ -36,36 +36,39 @@ public class Featurizer{
         //@Value("${alto.data.num_topics:5}")
         int numTopics;
 
+        public static void main(String[] args) {
+            
+        }
+
 	public void featurize(String featuresDir, String dataDirectory, String corpusName, String sourceTextDir, int numTopics) throws IOException{
             this.dataDirectory = dataDirectory;
             this.corpusName = corpusName;
             this.sourceTextDirectory = sourceTextDir;
             this.numTopics = numTopics;
 
-        //TODO: this should be done as a pre-processing step, so i'm leaving this code largely alone..
-		if(util.Util.checkExist(featuresDir))
-                    return;
+            //TODO: this should be done as a pre-processing step, so i'm leaving this code largely alone..
+            if(util.Util.checkExist(featuresDir))
+                return;
 
-		Writer writer = null;
-		writer = new BufferedWriter(new OutputStreamWriter(
+            Writer writer = null;
+            writer = new BufferedWriter(new OutputStreamWriter(
 				new FileOutputStream(featuresDir), "utf-8"));
 		
-		getData();
-		fillVocab();
-		if(ids.size() == 0){
-			//getting doc ids
-			String dir = this.sourceTextDirectory + "/" + corpusName;
-
-			File folder = new File(dir);
-			File[] listOfFiles = folder.listFiles();
-			for(int i = 0 ; i < listOfFiles.length; i++){
-                            
-				System.out.println("Featurizing file :"+listOfFiles[i].getName());
-				ids.add(listOfFiles[i].getName());
-				extractFeatures(listOfFiles[i].getName(), writer);
-			}
-		}
-		writer.close();
+            getData();
+            fillVocab();
+            if(ids.size() == 0){
+                //getting doc ids
+                String dir = this.sourceTextDirectory + "/" + corpusName;
+               
+                File folder = new File(dir);
+                File[] listOfFiles = folder.listFiles();
+                for(int i = 0 ; i < listOfFiles.length; i++){ 
+                    System.out.println("Featurizing file :"+listOfFiles[i].getName());
+                    ids.add(listOfFiles[i].getName());
+                    extractFeatures(listOfFiles[i].getName(), writer);
+                }
+            }
+            writer.close();
 	}
 
 	public void fillVocab() throws IOException{
@@ -114,9 +117,11 @@ public class Featurizer{
 		// gets an id and creates a map from vocab index to their count as a feature
 		TreeMap<Integer, Integer> indexToFreqMap = new TreeMap<Integer, Integer>();
 		String text = idToTextMap.get(id);
+                System.out.println(text);
 		StringTokenizer st = new StringTokenizer(text);
 		while (st.hasMoreElements()) {
 			String token = st.nextToken();
+                        System.out.println(token);
 			token = token.toLowerCase();//lowercase everything
 			if(!vocabToIndex.containsKey(token)) //|| stopWords.contains(token))
 				continue;

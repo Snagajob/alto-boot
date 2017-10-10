@@ -437,7 +437,13 @@ public class ClassifyController {
             TreeMap<String,Double> sortedIdToUncertainty = new TreeMap<String,Double>(vc);
             sortedIdToUncertainty.putAll(docIdToUncertainty.get(topicIndex));
             //find median
-            double uncertaintyMed = getMedianUncertainty(sortedIdToUncertainty);
+            double uncertaintyMed;
+            try {
+                uncertaintyMed = getMedianUncertainty(sortedIdToUncertainty);
+            } catch (IndexOutOfBoundsException e) {
+                System.out.println("getMedianUncertainty error, topic "+topicIndex+":\n"+sortedIdToUncertainty.toString());
+                uncertaintyMed = 0.0;
+            }
             int numLabeled = 0;
             if(labeledDocs.containsKey(topicIndex))
                 numLabeled = labeledDocs.get(topicIndex).size();
@@ -838,9 +844,13 @@ public class ClassifyController {
         else{
             int middleIndex = (int)Math.floor(sortedIdToUncertainty.keySet().size()/2);
             String medianId1 = sortedIds.get(middleIndex);
-            String medianId2 = sortedIds.get(middleIndex+1);
-
-            median = (sortedIdToUncertainty.get(medianId1)+sortedIdToUncertainty.get(medianId2))/2;
+            try {
+                String medianId2 = sortedIds.get(middleIndex+1);
+                median = (sortedIdToUncertainty.get(medianId1)+sortedIdToUncertainty.get(medianId2))/2;
+            } catch (IndexOutOfBoundsException e) {
+                System.out.println("getMedianUncertainty error:\n"+sortedIdToUncertainty.toString());
+                median = sortedIdToUncertainty.get(medianId1);
+            }
         }
         return median;
     }
