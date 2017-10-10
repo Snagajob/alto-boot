@@ -3,11 +3,15 @@ package api;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import util.Tuple;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.util.*;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 @Controller
 @RequestMapping("/alto-boot")
@@ -23,11 +27,20 @@ public class DisplayDataController {
 	private List<String> texts = new ArrayList<>();//keeps doc texts that is displayed
 	private List<String> ids = new ArrayList<>();//keeps doc ids
 
+    @PostConstruct
+    public void init() {
+        String backend = this.dataDirectory + "/" + this.corpusName + ".html";
+        DisplayData data = getData(backend);
+
+        this.idToIndex = data.idToIndex;
+        this.texts = data.texts;
+        this.ids = data.ids;
+    }
+
     @RequestMapping("DisplayData")
     public void displayDataRoute(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         boolean isLabelDocs = Boolean.parseBoolean(req.getParameter("isLabelDocs"));//TODO:send the parameter
-        String backend = this.dataDirectory + "/" + this.corpusName + ".html";
-        getData(backend);
+
         resp.setCharacterEncoding("UTF-8");
         String htmlStr = "";
         if(!isLabelDocs){
@@ -65,9 +78,13 @@ public class DisplayDataController {
 		return labelDocIds;
 	}
 
-	public void getData(String inputfile) throws IOException{
+
+	public DisplayData getData(String inputfile) {
 		//Reads in the html file and fills in data
-		
+		List<String> texts = new ArrayList<>();//keeps doc texts that is displayed
+		List<String> ids = new ArrayList<>();//keeps doc ids
+        Map<String,Integer> idToIndex = new HashMap<>();
+
         FileInputStream fis = null;
 		BufferedReader br = null;
 
@@ -116,14 +133,23 @@ public class DisplayDataController {
                 }
             }
         }
+        catch(Exception ex) {
+            throw new RuntimeException(ex);
+        }
         finally {
-            br.close();
-            fis.close();
+
+            try {
+                br.close();
+                fis.close();
+            }
+            catch(Exception ex) {}
         }
 
+        return new DisplayData(idToIndex, ids, texts);
 	}
-	public String getLabelDocsRelatedTexts(ArrayList<String> labelDocIds, int startIndex, int endIndex, int numDocsPerPage, String labelName, 
-			String labelSetStr, boolean isRefreshed){
+	public <T> String getLabelDocsRelatedTexts(ArrayList<String> labelDocIds, int startIndex, int endIndex, int numDocsPerPage, String labelName,
+                                               String labelSetStr, boolean isRefreshed){
+
 		String htmlString = "";
 		htmlString += "<html>\n";
 		htmlString += "<head>\n";
@@ -233,5 +259,16 @@ public class DisplayDataController {
 		return htmlString;
 	}
 
+	private class DisplayData {
+        public final Map<String, Integer> idToIndex = new HashMap<>();//maps doc id to the indec
+        public final List<String> texts = new ArrayList<>();//keeps doc texts that is displayed
+        public final List<String> ids = new ArrayList<>();//keeps doc ids
+
+        public DisplayData(Map<String, Integer> idToIndex, List<String> ids, List<String> texts) {
+            this.idToIndex.putAll(idToIndex);
+            this.texts.addAll(texts);
+            this.ids.addAll(ids);
+        }
+    }
 
 }
