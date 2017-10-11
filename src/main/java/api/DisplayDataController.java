@@ -44,6 +44,16 @@ public class DisplayDataController {
             String labelSetStr = req.getParameter("labelSet");
             htmlStr = getDocumentDetails(req.getParameter("docid"), Integer.parseInt(req.getParameter("numDisplayDocs")),
                     Boolean.parseBoolean(req.getParameter("newWindow")), Boolean.parseBoolean(req.getParameter("AL"))/*,topTopicWords*/, labelSetStr);
+        }else{
+            String labelDocIdsStr = req.getParameter("labelDocIds");
+            ArrayList<String> labelDocIds = getLabelDocs(labelDocIdsStr);
+            int startIndex = Integer.parseInt(req.getParameter("startIndex"));
+            int endIndex = Integer.parseInt(req.getParameter("endIndex"));
+            int numDocsPerPage = Integer.parseInt(req.getParameter("numDocsPerPage"));
+            String labelName = req.getParameter("labelName");
+            String labelSetStr = req.getParameter("labelSet");
+            boolean isRefreshed = Boolean.parseBoolean(req.getParameter("isRefreshed"));
+            htmlStr = getLabelDocsRelatedTexts(labelDocIds, startIndex, endIndex, numDocsPerPage, labelName,/* allDocsTopTopicWords,*/ labelSetStr, isRefreshed);
         }
 
         resp.setContentType("text/html");
@@ -181,6 +191,70 @@ public class DisplayDataController {
 
 		return buf.toString();
 	}
+
+    public String getLabelDocsRelatedTexts(ArrayList<String> labelDocIds, int startIndex, int endIndex, int numDocsPerPage, String labelName,
+                                           String labelSetStr, boolean isRefreshed){
+        StringBuffer buf = new StringBuffer();
+        buf.append( "<html>\n");
+        buf.append( "<head>\n");
+        buf.append( "<script src=\"http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js\"></script>\n");
+        buf.append( "<script type=\"text/javascript\" charset=\"utf-8\" src=\"static/js/Label.js\"></script>\n");
+        buf.append( "<script type=\"text/javascript\" charset=\"utf-8\" src=\"static/js/main.js\"></script>\n");
+        buf.append( "<script type=\"text/javascript\" charset=\"utf-8\" src=\"data/data.js\"></script>\n");
+        buf.append( "<link rel=\"stylesheet\" href=\"data/data.css\">\n");
+        buf.append( "</head>\n");
+
+        buf.append( "<body onload=\"afterLoad("+numDocsPerPage+",'"+labelName+"','"+labelSetStr+"');mainWindow = window.opener.mainWindow; getLabelViewLoadTime("+isRefreshed+");\">\n");
+        buf.append( "<form name=\"mainForm\">\n");
+        buf.append( "<div align=\"center\" style=\"display:none\" id=\"main\" class=\"main\">\n");
+        for(int i = 0; i < labelDocIds.size() ; i++){
+            String docid = labelDocIds.get(i);
+            buf.append( "<div class = \"segment\"   style=\"border:0px;\" id=\""+docid+"\">\n");
+            buf.append( "<table width=\"100%\">");
+            buf.append( "<tr><td>");
+            buf.append( "<div id='top-part-"+docid+"'\" ></div>");
+            buf.append( "</td></tr>");
+            buf.append( "<tr style=\"outline: 0px solid\"><td width=\"100%\">");
+            buf.append( "<div class = \"segment\" style=\"height:300px; overflow:scroll\" id=\""+docid+"\">");
+            buf.append( "<table>");
+
+            buf.append( "<tr><td>\n");
+            int docIndex = idToIndex.get(docid);
+            buf.append( texts.get(docIndex)+"\n");
+            buf.append( "</p></td></tr>\n");
+            buf.append( "</table>");
+            buf.append( "</div>\n");
+
+
+            buf.append( "<tr><td>");
+            buf.append( "<div id=\"low-part-"+docid+"\"></div>");
+            buf.append( "</td></tr>");
+            buf.append( "</table>");
+            if (i == labelDocIds.size()-1)
+                buf.append( "<br /><br /><br /><br />");
+            buf.append( "</div>\n");
+        }
+        //lower part table next and prev and close
+        buf.append( "<table align=\"center\" border=\"0\" style=\"background-color:white; bottom:0px; right:-6px; position:fixed;\" width=\"100%\">");
+        buf.append( "<tr> <td width=\"50%\" align=\"left\"><input type=\"button\" style=\"font-size:100%\" id=\"prevButton\" value=\"show prev 10\"");
+        buf.append( "	onclick=\"load_prev_label_docs('/DisplayData?topic=Labels','"+labelName+"','"+startIndex+"','"+numDocsPerPage +"')\" />");
+        buf.append( "</td>");
+        buf.append( "<td width=\"50%\" align=\"right\"><input type=\"button\" style=\"font-size:100%\" id=\"nextButton\" value=\"show next 10\"");
+        buf.append( "	onclick=\"load_next_label_docs('/DisplayData?topic=Labels','"+labelName+"','"+endIndex+"','"+numDocsPerPage +"')\" />");
+        buf.append( "&nbsp; &nbsp; </td>");
+        buf.append( "</tr>");
+
+        buf.append( "<tr>");
+        buf.append( "<td></td><td align=\"right\"> <input type=\"button\" onclick=\"closeWindowLabelView('"+labelName+"');\" style=\"font-size:100%\" value=\"close\">");
+        buf.append( "&nbsp; &nbsp; </td></tr>");
+        buf.append( "</table>");
+
+        buf.append( "</form>\n");
+        buf.append( "</body>\n");
+        buf.append( "</html>\n");
+
+        return buf.toString();
+    }
 
 	private class DisplayData {
         public final Map<String, Integer> idToIndex = new HashMap<>();//maps doc id to the indec
