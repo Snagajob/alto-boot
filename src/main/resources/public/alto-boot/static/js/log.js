@@ -207,7 +207,8 @@ function takeFinalLogs(){
 	var endpoint = backend+"/Logger?"+"logStr="+mainWindow.logStr+"&corpusname="+corpusname+"&username="+username+"&logfilenum="+String(logFileNum+"_Final");
 	var output="";
 	$.ajax({
-		type: "GET",
+		type: "POST",
+		//type: "GET",
 		contentType: "application/x-www-form-urlencoded;charset=utf-8",
 		url: endpoint,
 		async: true,
@@ -225,7 +226,8 @@ function takeLogsInServer(){
 		var endpoint = backend+"/Logger?"+"logStr="+mainWindow.logStr+"&corpusname="+mainWindow.corpusname+"&username="+mainWindow.username+"&logfilenum="+String(mainWindow.logFileNum);
 		var output="";
 		$.ajax({
-			type: "GET",
+			type: "POST",
+			//type: "GET",
 			contentType: "application/x-www-form-urlencoded;charset=utf-8",
 			url: endpoint,
 			async: true,
