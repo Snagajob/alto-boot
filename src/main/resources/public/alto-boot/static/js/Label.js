@@ -425,33 +425,9 @@ function classify(){
 	    "&finalEvent="+mainWindow.finalEvent+
 	    "&min="+min+
 	    "&sec="+sec;
-	/*var endpoint=backend+"/Classify?"+
-	    "fromScratch="+isFromScratch+
-	    "&isFirstTime="+mainWindow.isFirstTime+
-	    "&AL=false&final=false"+
-	    "&username="+username+
-	    "&corpusname="+corpusname+
-	    "&topicsnum="+topicsnum+
-	    "&docLabelMap="+result+
-	    "&startSeconds="+startSeconds+
-	    "&labeledDocs="+labeledDocsStr+
-	    "&condition="+global_study_condition+
-	    "&editALabel="+mainWindow.editALabel+
-	    "&editedPrevLabel="+mainWindow.editedPrevLabel+
-	    "&editedNewLabel="+mainWindow.editedNewLabel+
-	    "&deleteALabel="+mainWindow.deleteALabel+
-	    "&deletedLabel="+mainWindow.deletedLabel+
-	    "&deletedDocLabel="+mainWindow.deleteDocLabel+
-	    "&deletedDocLabelId="+mainWindow.deletedDocLabelId+
-	    "&finalEvent="+mainWindow.finalEvent+
-	    "&min="+min+
-	    "&sec="+sec;
-	    */
 	mainWindow.finalEvent = "";
 	mainWindow.resetScratchVariables();
-	//var output="";
 	$.ajax({
-		//type: "GET",
 		type: "POST",
 		contentType: "application/x-www-form-urlencoded;charset=utf-8",
 		url: endpoint,
@@ -571,29 +547,6 @@ function classifyForAL(){
 
 	//send in the labeled docs in each topic in the logs
 	var labeledDocsStr = getLabeledDocsStr();
-
-	/*var endpoint = mainWindow.backend+"/Classify?"+
-	    "fromScratch="+isFromScratch+
-	    "&isFirstTime="+mainWindow.isFirstTime+
-	    "&AL=true&final=false"+
-	    "&username="+mainWindow.username+
-	    "&corpusname="+mainWindow.corpusname+
-	    "&topicsnum="+topicsnum+
-	    "&docLabelMap="+result+
-	    "&numLabeledInTopics="+numLabeledInTopicsStr+
-	    "&condition="+global_study_condition+
-	    "&labeledDocs="+labeledDocsStr+
-	    "&editALabel="+mainWindow.editALabel+
-	    "&editedPrevLabel="+mainWindow.editedPrevLabel+
-	    "&editedNewLabel="+mainWindow.editedNewLabel+
-	    "&deleteALabel="+mainWindow.deleteALabel+
-	    "&deletedLabel="+mainWindow.deletedLabel+
-	    "&deletedDocLabel="+mainWindow.deleteDocLabel+
-	    "&deletedDocLabelId="+mainWindow.deletedDocLabelId+
-	    "&finalEvent="+mainWindow.finalEvent+
-	    "&min="+min+
-	    "&sec="+sec;
-	    */
 	var endpoint = mainWindow.backend+"/Classify";
 	var output = "fromScratch="+isFromScratch+
 	    "&isFirstTime="+mainWindow.isFirstTime+
@@ -617,9 +570,7 @@ function classifyForAL(){
 	    "&sec="+sec;
 	mainWindow.finalEvent = "";
 	mainWindow.resetScratchVariables();
-	//var output="";
 	$.ajax({
-		//type: "GET",
 		type: "POST",
 		contentType: "application/x-www-form-urlencoded;charset=utf-8",
 		url: endpoint,
@@ -663,27 +614,6 @@ function finalClassify(){//classify all documents but just take logs
 	result = result.substring(0, result.length-1);
 	var labeledDocsStr = getLabeledDocsStr();
 	var isFromScratch = mainWindow.getIsFromScratch(false);
-	/*var endpoint=backend+"/Classify?"+
-	    "fromScratch="+isFromScratch+
-	    "&isFirstTime="+mainWindow.isFirstTime+
-	    "&AL=false&final=true"+
-	    "&username="+username+
-	    "&corpusname="+corpusname+
-	    "&topicsnum="+topicsnum+
-	    "&docLabelMap="+result+
-	    "&labeledDocs="+labeledDocsStr+
-	    "&condition="+global_study_condition+
-	    "&editALabel="+mainWindow.editALabel+
-	    "&editedPrevLabel="+mainWindow.editedPrevLabel+
-	    "&editedNewLabel="+mainWindow.editedNewLabel+
-	    "&deleteALabel="+mainWindow.deleteALabel+
-	    "&deletedLabel="+mainWindow.deletedLabel+
-	    "&deletedDocLabel="+mainWindow.deleteDocLabel+
-	    "&deletedDocLabelId="+mainWindow.deletedDocLabelId+
-	    "&finalEvent="+mainWindow.finalEvent+
-	    "&min="+min+
-	    "&sec="+sec;
-	    */
 	var endpoint=backend+"/Classify";
 	var output = "fromScratch="+isFromScratch+
 	    "&isFirstTime="+mainWindow.isFirstTime+
@@ -707,9 +637,7 @@ function finalClassify(){//classify all documents but just take logs
 	mainWindow.finalEvent = "";
 	mainWindow.resetScratchVariables();
 
-	//var output="";
 	$.ajax({
-		//type: "GET",
 		type: "POST",
 		contentType: "application/x-www-form-urlencoded;charset=utf-8",
 		url: endpoint,
