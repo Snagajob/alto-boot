@@ -641,7 +641,7 @@ function count_down(){
 		takeFinalLogs();
 		finalClassify();
 		alert("Time is up! Thanks for participating.");
-                location.href = backend+'/newsession.html';
+        location.href = backend+'/newsession.html';
 	}
 }
 function finishLabeling(){
@@ -652,8 +652,8 @@ function finishLabeling(){
 	
 	takeFinalLogs();
 	finalClassify();
-	alert("Thanks for participating. Please take the posthoc survey.");
-        location.href = backend+'/newsession.html';
+	alert("Thanks for participating.");
+    location.href = backend+'/newsession.html';
 }
 function shuffle(array) {
 	var currentIndex = array.length, temporaryValue, randomIndex ;
