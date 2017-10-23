@@ -412,7 +412,8 @@ function classify(){
 	mainWindow.resetScratchVariables();
 	var output="";
 	$.ajax({
-		type: "GET",
+		//type: "GET",
+		type: "POST",
 		contentType: "application/x-www-form-urlencoded;charset=utf-8",
 		url: endpoint,
 		async: true,
