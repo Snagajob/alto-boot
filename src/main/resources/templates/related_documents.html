@@ -1,0 +1,93 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src="static/js/Label.js"></script>
+    <script type="text/javascript" charset="utf-8" src="static/js/main.js"></script>
+    <script type="text/javascript" charset="utf-8" src="data/data.js"></script>
+    <link rel="stylesheet" href="data/data.css" />
+
+    <script th:inline="javascript">
+    /*<![CDATA[*/
+
+      function onDetailLoad() {
+        var labelName = [[${labelName}]];
+        var labelSetStr = [[${labelSetStr}]];
+        var numDocsPerPage = [[${numDocsPerPage}]];
+        var isRefreshed = [[${isRefreshed}]];
+        var startIndex = [[${startIndex}]];
+        var endIndex = [[${endIndex}]];
+
+        afterLoad(numDocsPerPage, labelName, labelSetStr);
+
+        getLabelViewLoadTime(isRefreshed);
+
+        $("#closeButton").click(function(e) {
+            closeWindowLabelView(labelName);
+        });
+
+        $("#prevButton").click(function(e) {
+            load_prev_label_docs('/RelatedDocs?topic=Labels',labelName, startIndex, numDocsPerPage);
+        });
+
+        $("#nextButton").click(function(e) {
+            load_next_label_docs('/DisplayData?topic=Labels', labelName, endIndex, numDocsPerPage);
+        });
+      }
+
+    /*]]>*/
+    </script>
+</head>
+
+<body onload="onDetailLoad(); mainWindow = window.opener.mainWindow;">
+  <form name="mainForm">
+    <div align="center" style="display:none" id="main" class="main">
+        <div th:each="labelDoc : ${labelDocs}" id="${labelDoc.id}" class="segment">
+            <table width="100%">
+                <tr>
+                    <td>
+                        <div id="${'top-part-' + ${labelDoc.id}"></div>
+                    </td>
+                </tr>
+                <tr style="outline: 0px solid">
+                    <td width="100%">
+                        <div class="segment" style="height:300px; overflow:scroll" th:id="${labelDoc.id}">
+                            <table>
+                                <tr>
+                                    <td>
+                                        <span th:text="${labelDoc.text}" />
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div th:id="${'low-part-' + labelDoc.id}"></div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <table align="center" border="0" style="background-color:white; bottom:0px; right:-6px; position:fixed;" width="100%">
+            <tr>
+                <td width="50%" align="left">
+                    <input type="button" style="font-size:100%" id="prevButton" value="show prev 10" />
+                </td>
+                <td width="50%" align="right">
+                    <input type="button" style="font-size:100%" id="nextButton" value="show next 10" />
+                "&nbsp; &nbsp;
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td align="right">
+                    <input id="closeButton" type="button" style="font-size:100%" value="close" />
+                    &nbsp; &nbsp;
+                </td>
+            </tr>
+        </table>
+    </div>
+  </form>
+</body>
+</html>

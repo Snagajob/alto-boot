@@ -12,6 +12,8 @@ Java 1.8
 
 Docker
 
+Lombok Plugin (Intellij or Eclipse)
+
 ## Compiling and Running
 Let BASEDIR be the directory of ALTO code.
 

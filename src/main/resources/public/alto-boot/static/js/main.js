@@ -356,12 +356,14 @@ function load_label_docs(url, newWindow, labelName, startIndex, numDocsPerPage, 
 	var height = 600;
 	var width = 600;
 	var margin = 20;
-	url = url.split("/DisplayData")[0]+"/DisplayData?";
+	//url = url.split("/DisplayData2")[0]+"/DisplayData2?";
 
-	url = url.split("#")[0];
+	//url = url.split("#")[0];
+	url = backend + "/RelatedDocs?";
 	docid = mainWindow.localAllLabelDocMap[labelName][Number(startIndex)];
 	url += "labelName="+labelName;
-	url += "&isRefreshed="+isRefreshed;
+
+    url += "&isRefreshed="+isRefreshed;
 	url += "&docid="+docid;//first document with that label
 	url +="&AL="+AL;
 	url += "&corpusname="+ corpusname;

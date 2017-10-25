@@ -1,14 +1,19 @@
 package api;
 
+import data.Document;
+import data.DocumentLoader;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/alto-boot")
@@ -20,22 +25,78 @@ public class DisplayDataController {
     @Value("${alto.data.base_dir:/usr/local/alto-boot}")
     String dataDirectory;
 
+    @Autowired
+    DocumentLoader docLoader;
+
 	private Map<String, Integer> idToIndex = new HashMap<>();//maps doc id to the indec
 	private List<String> texts = new ArrayList<>();//keeps doc texts that is displayed
 	private List<String> ids = new ArrayList<>();//keeps doc ids
+    private Map<Integer, Document> docs = new HashMap<>();
+
+    private class LabelDoc {
+        public String text;
+        public String id;
+
+        public LabelDoc(String id, String text) {
+            this.text = text;
+            this.id = id;
+        }
+    }
 
     @PostConstruct
     public void init() {
         String backend = this.dataDirectory + "/" + this.corpusName + ".html";
         DisplayData data = getData(backend);
 
+        this.docs = docLoader.getAllGroupedById();
+
         this.idToIndex = data.idToIndex;
         this.texts = data.texts;
         this.ids = data.ids;
     }
 
+
     @RequestMapping("DisplayData")
-    public void displayDataRoute(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    public String displayDataRoute(Integer docid, String labelSet, Integer numDisplayDocs, Boolean newWindow,
+                                   Boolean AL, Map<String,Object> model) {
+
+        model.put("message","hello there");
+        model.put("numDisplayDocs", numDisplayDocs);
+        model.put("labelSetStr", labelSet);
+
+
+        model.put("idIndex", docid);
+        model.put("documentText", this.docs.get(docid));
+        model.put("id", docid);
+
+        return "document_detail";
+    }
+
+    @RequestMapping("RelatedDocs")
+    public String relatedDocsRoute(Boolean isLabelDocs, Integer docid, String labelSet, String labelDocIds, Integer startIndex,
+                                   Integer endIndex, Integer numDisplayDocs, Boolean newWindow, Boolean AL, String isRefreshed,
+                                   Map<String,Object> model) {
+
+        ArrayList<String> labelDocs = getLabelDocs(labelDocIds);
+
+        List<LabelDoc> docs = labelDocs.stream().map(x -> new LabelDoc(x, texts.get(Integer.parseInt(x))))
+                .collect(Collectors.toList());
+
+        model.put("labelDocs", docs);
+        model.put("labelSetStr", labelSet);
+        model.put("numDocsPerPage", numDisplayDocs);
+
+        //TODO: temporary to catch "undefined" value coming from client.
+        boolean refreshed = (isRefreshed != null) && (!isRefreshed.equals("undefined") && isRefreshed.equals("true"));
+
+        model.put("isRefreshed", refreshed);
+
+        return "related_documents";
+    }
+
+    @RequestMapping("DisplayData2")
+    @ResponseBody()
+    public String displayDataRoute(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         boolean isLabelDocs = Boolean.parseBoolean(req.getParameter("isLabelDocs"));//TODO:send the parameter
 
         resp.setCharacterEncoding("UTF-8");
@@ -56,11 +117,7 @@ public class DisplayDataController {
             htmlStr = getLabelDocsRelatedTexts(labelDocIds, startIndex, endIndex, numDocsPerPage, labelName,/* allDocsTopTopicWords,*/ labelSetStr, isRefreshed);
         }
 
-        resp.setContentType("text/html");
-
-        PrintWriter out = resp.getWriter();
-        out.print(htmlStr);
-        out.flush();
+        return htmlStr;
     }
 
     public ArrayList<String> getLabelDocs(String labelDocIdsStr){
