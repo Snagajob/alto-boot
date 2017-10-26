@@ -29,7 +29,6 @@ public class DisplayDataController {
     public String displayDataRoute(Integer docid, String labelSet, Integer numDisplayDocs, Boolean newWindow,
                                    Boolean AL, Map<String,Object> model) {
 
-        model.put("message","hello there");
         model.put("numDisplayDocs", numDisplayDocs);
         model.put("labelSetStr", labelSet);
 
