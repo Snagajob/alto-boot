@@ -9,7 +9,7 @@
     <script th:inline="javascript">
     /*<![CDATA[*/
 
-      function onDetailLoad() {
+      $(document).ready(function() {
         var labelName = [[${labelName}]];
         var labelSetStr = [[${labelSetStr}]];
         var numDocsPerPage = [[${numDocsPerPage}]];
@@ -17,6 +17,7 @@
         var startIndex = [[${startIndex}]];
         var endIndex = [[${endIndex}]];
 
+        mainWindow = window.opener.mainWindow;
         afterLoad(numDocsPerPage, labelName, labelSetStr);
 
         getLabelViewLoadTime(isRefreshed);
@@ -32,20 +33,20 @@
         $("#nextButton").click(function(e) {
             load_next_label_docs('/DisplayData?topic=Labels', labelName, endIndex, numDocsPerPage);
         });
-      }
+     });
 
     /*]]>*/
     </script>
 </head>
 
-<body onload="onDetailLoad(); mainWindow = window.opener.mainWindow;">
+<body>
   <form name="mainForm">
     <div align="center" style="display:none" id="main" class="main">
-        <div th:each="labelDoc : ${labelDocs}" id="${labelDoc.id}" class="segment">
+        <div th:each="labelDoc : ${labelDocs}" th:id="${labelDoc.id}" class="segment">
             <table width="100%">
                 <tr>
                     <td>
-                        <div id="${'top-part-' + ${labelDoc.id}"></div>
+                        <div th:id="${'top-part-' + labelDoc.id}"></div>
                     </td>
                 </tr>
                 <tr style="outline: 0px solid">

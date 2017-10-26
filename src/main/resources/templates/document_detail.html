@@ -24,15 +24,15 @@
 <table width="100%">
   <tr>
     <td>
-      <div th:id="${'top-part-' + id}"></div>
+      <div th:id="${'top-part-' + document.id}"></div>
     </td>
   </tr>
   <tr>
     <td width="100%">
       <form name="mainForm">
         <div style="display:none" id="main" class="main">
-            <div class ="segment" style="height:300px; overflow:scroll;" th:id="${idIndex}">
-              <span th:text="${documentText}"></span>
+            <div class ="segment" style="height:300px; overflow:scroll;" th:id="${document.id}">
+              <span th:utext="${document.text}"></span>
             </div>
         </div>
       </form>
@@ -40,7 +40,7 @@
   </tr>
   <tr>
     <td>
-      <div th:id="${'low-part-' + id}"></div>
+      <div th:id="${'low-part-' + document.id}"></div>
     </td>
   </tr>
 </table>
