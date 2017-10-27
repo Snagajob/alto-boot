@@ -1,7 +1,7 @@
 /* Override some defaults */
 html, body {
 	background-color: #eee;
-	
+
 }
 ::-webkit-scrollbar {
     -webkit-appearance: none;
@@ -13,13 +13,33 @@ html, body {
     -webkit-box-shadow: 0 0 1px rgba(255,255,255,.5);
 }
 
-body {
-	padding-top: 40px;
-	/* 40px to make the container go all the way to the bottom of the topbar */
+#container {
+    position: relative;
+    top: 56px;
 }
 
-.container>footer p {
-	text-align: center; /* center align it with the container */
+.documents {
+    font-size: small;
+		overflow-wrap: normal;
+		word-wrap: normal;
+}
+
+.document-link {
+	white-space:nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.document-container {
+	border-top: 1px solid darkgrey;
+}
+
+.o-y-auto {
+	overflow-y: auto;
+}
+
+.fixed-card {
+	max-height: calc(100vh - 85px);
 }
 
 /* The white background content wrapper */
@@ -62,13 +82,6 @@ body {
 
 .topic {
 	text-align: center;
-}
-
-
-hr {
-	margin: 0px;
-	border-bottom: 1px solid darkgrey;
-	width: 2px;
 }
 
 
@@ -126,11 +139,6 @@ hr {
 	margin-left: 750px;
 }
 
-#timing {
-	width: 100px;
-}
-
-
 .right {
 	float: right;
 	width: 687px;
@@ -145,28 +153,20 @@ a:visited {
 }
 
 a:link {
- 	color: #B0B0B0; 
+ 	color: #B0B0B0;
 	/*color: #000000; black */
 }
 
-#finish_button {
-	width: 200px;
-}
-
 #label-display {
-	border-radius: 10px;
-	border: 2px solid #D0D0D0;
+	border: 1px solid darkgrey;
 	padding: 20px;
-	width: 200px;
 	height: 150px;
 	overflow-y: scroll;
+	position: relative;
 }
 
-
-#main-table {
-	width: 250px;
-	height: 150px;
-	position: relative;
+#main-table input, #main-table .btn {
+    display: block;
 }
 
 .float {

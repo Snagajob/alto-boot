@@ -25,8 +25,7 @@
 
 <script src="static/js/tools.js"></script>
 
-<link rel="stylesheet"
-	href="static/libs/bootstrap-1.4.0/bootstrap.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
 <link rel="stylesheet" href="static/css/main.css">
 
 
@@ -63,11 +62,11 @@
 	var topicsnum =  getParameterByName("topicsnum");
 	var study_condition = getParameterByName("studycondition");
 	var username = getParameterByName("username");
-	
+
 	username = username.replace("+", " ");
 	var topic_doc_show_num = 20;
 	var num_baseline_docs = topic_doc_show_num * Number(topicsnum);
-	
+
 	var newsession = "true";
 
 	// added by yuening
@@ -90,127 +89,76 @@
 </head>
 
 
-<body id="whole-window">
-	<div class="topbar">
-		<div class="fill">
-			<div class="container">
-				<a class="brand" href="#" id="alt">Interactive Document Labeling</a>
-				<form id="titleform" class="pull-right">
-					<input id="user-name" class="input-small" type="text"
-						style="background-color: transparent" readonly="readonly">
-					<input id="timing" class="input-small" type="text"
-						style="background-color: transparent" readonly="readonly">
-				</form>
-			</div>
-		</div>
-	</div>
-	<div class="container">
-		<div class="content">
-			<table>
-				<tr>
-					<td id="label-col">
-						<form
-							onsubmit="document.getElementById('label-form').value = ''; return false;">
-							<div style="overflow-y: auto; position: fixed; height: 500px"
-								id="main-table">
-								<div id="label-display"
-									style="position: relative; height: 100px; background-color: white"></div>
+<body>
+<nav class="navbar navbar-dark bg-dark fixed-top">
+	<span class="navbar-brand mb-0 h1">Interactive Document Labeling</span>
+	<form class="form-inline my-2 my-lg-0">
+		<!--<span id="user-name" class="input-small"></span>-->
+		<div id="timing" class="navbar-text"></div>
+	</form>
+</nav>
 
-								<div style="position: relative">
-									<table class="noborder" style="display: inline-block;">
-										<tr>
-											<td colspan="2"><input class="large" id="label-form"
-												placeholder="new label name" name="label-form" size="20"
-												type="text" onkeypress="disableEnableAddLabel()" /></td>
-										</tr>
-										<tr>
-											<td></td>
-											<td><input type="submit" id="label-submit-button"
-												class="btn small primary" value="add label"
-												onclick="addLabel()" 
-												title="adds the label typed in the box to the label list." disabled></td>
-										</tr>
+<div class="container" id="container">
+	<div class="card mt-3 p-3 fixed-card">
+		<div class="container o-y-auto">
+			<div class="row">
+				<div class="col col-4">
+						<div id="main-table" class="o-y-auto" style="position: fixed; height: 500px">
+              <!-- Display all created labels --->
+							<div id="label-display"></div>
 
-										<tr>
-											<td><input id="edit-label" type="button" disabled
-												class="btn small primary" onclick="editLabel()"
-												value="rename label"
-												title="renames the label for all documents that are labeled with selected label."></td>
-											<td><input id="delete-label" type="button" disabled
-												class="btn small primary" onclick="deleteLabel()"
-												value="delete label"
-												title="deletes the label for all documents that are labeled with selected label."></td>
-										</tr>
+              <!-- Add New Label -->
+              <form class="form-inline" onsubmit="document.getElementById('label-form').value = ''; return false;">
+                <div class="form-group mx-sm-3">
+                  <div class="input-group">
+                    <input class="form-control" id="label-form"  placeholder="New label" name="label-form" size="20" type="text" onkeypress="disableEnableAddLabel()" />
+                    <span class="input-group-btn">
+                      <button type="submit" id="label-submit-button" class="btn btn-primary" onclick="addLabel()" title="adds the label typed in the box to the label list." disabled>Add Label</button>
+                    </span>
+                  </div>
+                </div>
+              </form>
 
-										<tr>
-											<td></td>
-											<td></td>
+              <!-- Edit/Delete Label -->
+							<button id="edit-label" disabled class="btn btn-info" onclick="editLabel()" title="renames the label for all documents that are labeled with selected label.">Rename Label</button>
+							<button id="delete-label" disabled class="btn btn-danger" onclick="deleteLabel()" title="deletes the label for all documents that are labeled with selected label.">Delete Label</button>
 
-										</tr>
-										<tr>
-											<td></td>
-											<td></td>
-
-										</tr>
-										<tr>
-											<td></td>
-											<td></td>
-
-										</tr>
-										<tr>
-											<td></td>
-											<td></td>
-
-										</tr>
-										<tr>
-											<td colspan="2"><div id="progress-header-div"><b>Covered Themes Progress:</b></div></td>
-										</tr>
-
-										<tr>
-											<td colspan="2">
-													<div id="progress-bar-div" class="progress">
-														<div id="progree-inner-div" class="progress-bar progress-bar-striped"
-															role="progressbar" aria-valuenow="40" aria-valuemin="0"
-															aria-valuemax="100" style="width: 0%">0%</div>
-													</div></td>
-
-										</tr>
-									</table>
-								</div>
+              <!-- Theme Progress -->
+							<div id="progress-header-div"><b>Covered Themes Progress:</b></div>
+							<div id="progress-bar-div" class="progress">
+								<div id="progress-inner-div" class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
 							</div>
-						</form>
-					</td>
 
-					<td id="data-col">
-						<div id="title" class="row table-header">
-							<div class="span4">
-								<h2>Themes</h2>
-							</div>
-							<div class="span12">
-								<h2>Documents</h2>
-							</div>
+              <!-- Finish Labeling -->
+							<form id="finish" action="ui.html" method="POST">
+								<button id="finish_button" type="submit" class="btn btn-primary" disabled onclick="finishLabeling()">Finish and submit all labels</button>
+							</form>
 						</div>
+				</div>
+				<div class="col col-8">
+					<div class="row">
+						<h2 class="col-3">Themes</h2>
+						<h2 class="col-9">Documents</h2>
+					</div>
 
-						<form id="mainform" action="ui.html" method="POST">
-							<div id="mainform_items"></div>
-						</form>
-						<form id="finish" action="ui.html" method="POST"> 
-							<input id="finish_button" type="button" class="btn small primary" disabled
-								onclick="finishLabeling()" value="Finish and submit all labels">
-						</form> <footer id="footer">
-							<p>&copy; This is just a test 2015</p>
-						</footer>
-					</td>
-				</tr>
-			</table>
-		</div>
-		<div class="modal hide" id="loading">
-			<div class="modal-body" align="center">
-				<br /> <br />
-				<p id="loading_data">Loading...</p>
-				<img src="static/images/loading.gif"> <br /> <br />
+          <div class="row">
+  					<form id="mainform" action="ui.html" method="POST">
+  						<div id="mainform_items">
+  							<!-- Themes and Documents are inserted here -->
+  						</div>
+  					</form>
+          </div>
+				</div>
 			</div>
 		</div>
 	</div>
+	<div class="modal hide" id="loading">
+		<div class="modal-body" align="center">
+			<br /> <br />
+			<p id="loading_data">Loading...</p>
+			<img src="static/images/loading.gif"> <br /> <br />
+		</div>
+	</div>
+</div>
 </body>
 </html>
