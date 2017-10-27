@@ -1,6 +1,6 @@
 package api;
 
-import data.Document;
+import data.AltoDocument;
 import data.DocumentLoader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -17,7 +17,7 @@ public class DisplayDataController {
     @Autowired
     DocumentLoader docLoader;
 
-    private Map<Integer, Document> docs = new HashMap<>();
+    private Map<Integer, AltoDocument> docs = new HashMap<>();
 
     @PostConstruct
     public void init() {
@@ -42,7 +42,7 @@ public class DisplayDataController {
                                    Integer startIndex, Integer endIndex, Integer numDisplayDocs,
                                    String isRefreshed, Map<String,Object> model) {
 
-        List<Document> collect = Arrays.stream(labelDocIds.split(","))
+        List<AltoDocument> collect = Arrays.stream(labelDocIds.split(","))
                 .map(Integer::parseInt)
                 .map(this.docs::get)
                 .collect(Collectors.toList());
