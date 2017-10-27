@@ -3,7 +3,7 @@
 build
 *.iml
 src/main/resources/config/application-local.properties
-data/
+/data
 text_data/
 *.log
 *.swp
