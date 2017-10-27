@@ -49,18 +49,6 @@ var usedLabels = [];
 var newlyAddedLabel = false;//if a label existed, but no training data was in it, and now is added, set to true
 var applyTime = 0; //label apply/approve/change time log
 
-function disableEnableAddLabel(){
-	$('#label-form').keyup(function(e){
-		//window.alert(e.keyCode);
-		if((e.keyCode == 8 || e.keyCode == 46) && this.value.length == 0){
-			document.getElementById("label-submit-button").disabled = true;
-		}
-		else{
-			document.getElementById("label-submit-button").disabled = false;
-		}
-	});
-}
-
 function get_doc(doc, documents){
 	for (var d in documents){
 		if (documents[d]["name"]==doc){
