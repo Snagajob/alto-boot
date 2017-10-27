@@ -50,6 +50,21 @@ function fillDocToIndexMap(){
 		cnt++;
 	}
 }
+
+/**
+  * Disable the Add Label button if the label is only white-space or empty
+  * Enable the Add Lable button if there is content
+  */
+function disableEnableAddLabel(){
+	$('#label-form').keyup((e) => {
+		if (e.target.value.trim() == '') {
+			$('#label-submit-button').prop('disabled', true)
+		} else {
+      $('#label-submit-button').prop('disabled', false)
+		}
+	});
+}
+
 //----------------------------------------------------------------------------------------
 //Adding a new label
 function addLabel(){
