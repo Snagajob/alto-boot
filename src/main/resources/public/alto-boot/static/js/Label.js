@@ -362,11 +362,12 @@ function editLabel(){
 //Document info
 function fillDocTopics(){
 	//makes a string of docIds to the topics it has
-	if(Object.keys(mainWindow.docToTopicMap).length == 0){
+	if (Object.keys(mainWindow.docToTopicMap).length == 0) {
 		for(var d in all_docs){
-			var docId = all_docs[d]["name"];
-			var highTopics = all_docs[d]["highestTopic"];
-			docToTopicMap[docId] = highTopics;
+			let docId = all_docs[d]['name'];
+			let highTopics = all_docs[d]['highestTopic'];
+
+      docToTopicMap[docId] = highTopics;
 		}
 	}
 }
@@ -690,73 +691,71 @@ function suggestDocs(isAuto, newLabel){
 //UI docs and their colors
 function updateUIDocs(json){
 	mainWindow.fillDocTopics();
-	if(mainWindow.global_study_condition == TA_CONDITION || mainWindow.global_study_condition == TR_CONDITION){
-		for (var i = 0 ; i < topicsnum; i++){
-			var topicIndex = i;
-			//add already labeled docs
-			var labeled = mainWindow.labeledTopicsDocs[topicIndex];
-			mainWindow.topicToAllDisplayedDocs[""+topicIndex] = [];
-			mainWindow.document.getElementById("topic-docs-"+topicIndex).innerHTML = "";
-			var innerHTMLStr = "";
-			innerHTMLStr += "<table id=\"summary-table-topic-"+topicIndex+"\">";
 
-			for(var j in labeled){
-				var labeledDocId = labeled[j];
-				innerHTMLStr += mainWindow.addDocToList(labeledDocId, topicIndex);
-			}
+  if (mainWindow.global_study_condition == TA_CONDITION || mainWindow.global_study_condition == TR_CONDITION) {
+		for (let topicIndex = 0 ; topicIndex < +topicsnum; topicIndex++) {
+			// add already labeled docs
+			let labeled = mainWindow.labeledTopicsDocs[topicIndex];
+      let innerHTMLStr = ``;
+
+      mainWindow.topicToAllDisplayedDocs[`${topicIndex}`] = [];
+
+      for(let j in labeled) {
+        let labeledDocId = labeled[j];
+
+        innerHTMLStr += mainWindow.addDocToList(labeledDocId, topicIndex);
+      }
+
 			//add AL docs and top topic docs sorted on uncertainty
-			for (var j in mainWindow.topicToALTopIds[""+topicIndex]){
-				var docId = mainWindow.topicToALTopIds[""+topicIndex][j];
-				innerHTMLStr += mainWindow.addDocToList(docId, topicIndex);
-			}
-			mainWindow.document.getElementById("topic-docs-"+topicIndex).innerHTML += "</table>";
-			mainWindow.document.getElementById("topic-docs-"+i).innerHTML = innerHTMLStr;
-			//updates color in UI
-			for(var j in labeled){
-				var labeledDocId = labeled[j];
-				mainWindow.updateColor(labeledDocId);
-			}
-			for (var j in mainWindow.topicToALTopIds[""+topicIndex]){
-				var docId = mainWindow.topicToALTopIds[""+topicIndex][j];
-				mainWindow.updateColor(docId);
-			}
-		}
-		var highestTopic = json.highestTopic;
+      for (let j in mainWindow.topicToALTopIds[`${topicIndex}`]) {
+        let docId = mainWindow.topicToALTopIds[`${topicIndex}`][j];
+
+        innerHTMLStr += mainWindow.addDocToList(docId, topicIndex);
+      }
+
+			mainWindow.document.getElementById(`topic-docs-${topicIndex}`).innerHTML = `
+        <div id="summary-table-topic-${topicIndex}">
+          ${innerHTMLStr}
+        </div>`;
+
+      //updates color in UI
+      for(let j in labeled) {
+        let labeledDocId = labeled[j];
+        mainWindow.updateColor(labeledDocId);
+      }
+
+      for (let j in mainWindow.topicToALTopIds[`${topicIndex}`]) {
+        let docId = mainWindow.topicToALTopIds[`${topicIndex}`][j];
+
+        mainWindow.updateColor(docId);
+      }
+    }
+		let highestTopic = json.highestTopic;
 		mainWindow.optTopic = highestTopic;
 
 		//draw red box around highest doc
-		mainWindow.optDocId = mainWindow.topicToALTopIds[""+highestTopic][0];
+		mainWindow.optDocId = mainWindow.topicToALTopIds[`${highestTopic}`][0];
 		mainWindow.addOptDocBorder(mainWindow.optDocId);
-	}
-	else{
+	} else {
 		mainWindow.allBaselineDocs = [];
-		mainWindow.document.getElementById("mainform_items").innerHTML = "";
-		var innerHTMLStr = "<table id=\"summary-table\">";
-		//window.alert(Object.keys(mainWindow.baselineLabeledDocs).length);
-		//add labeled docs
-		if(mainWindow.docLabelMap != null && Object.keys(mainWindow.docLabelMap).length != 0){
+		let innerHTMLStr = ``;
 
-			for(var i in mainWindow.baselineLabeledDocs){
-				var docId = mainWindow.baselineLabeledDocs[i];
-				innerHTMLStr += mainWindow.addBaselineDocToList(docId);
-			}
+		//add labeled docs
+		if (mainWindow.docLabelMap != null && Object.keys(mainWindow.docLabelMap).length != 0) {
+      Object.keys(mainWindow.baselineLabeledDocs).forEach(docId => innerHTMLStr += mainWindow.addBaselineDocToList(docId));
 		}
 		//add AL docs to the list sorted based on uncertainty
-		for (var j in mainWindow.baselineALDocs){
-			var docId = mainWindow.baselineALDocs[j];
-			innerHTMLStr += mainWindow.addBaselineDocToList(docId);
-		}
-		innerHTMLStr += "</table>";
-		mainWindow.document.getElementById("mainform_items").innerHTML = innerHTMLStr;
+    Object.keys(mainWindow.baselineALDocs).forEach(docId => innerHTMLStr += mainWindow.addBaselineDocToList(docId));
+
+		mainWindow.document.getElementById("mainform_items").innerHTML = `
+      <div id="summary-table">
+        ${innerHTMLStr}
+      </div>`;
+
 		//update colors in UI
-		for (var j in mainWindow.baselineLabeledDocs){
-			var docId = mainWindow.baselineLabeledDocs[j];
-			mainWindow.updateColor(docId);
-		}
-		for (var j in mainWindow.baselineALDocs){
-			var docId = mainWindow.baselineALDocs[j];
-			mainWindow.updateColor(docId);
-		}
+    Object.keys(mainWindow.baselineLabeledDocs).forEach(docId => mainWindow.updateColor(docId));
+    Object.keys(mainWindow.baselineALDocs).forEach(docId => mainWindow.updateColor(docId));
+
 		//draw red box around highest doc
 		mainWindow.optDocId = mainWindow.baselineALDocs[0];
 		mainWindow.addOptDocBorder(mainWindow.optDocId);
@@ -846,50 +845,43 @@ jQuery.fn.scrollTo = function(elem) {
 	return this;
 };
 function addOptDocBorder(){
-	var highestTopic = mainWindow.docToTopicMap[mainWindow.optDocId];
-	var divId = "topic"+highestTopic+"-"+mainWindow.optDocId;
-	//herehere
-	if (mainWindow.global_study_condition == TA_CONDITION || mainWindow.global_study_condition == TR_CONDITION){
-		//scroll to the specified div in highest topic div
-		$('html, body').animate({
-			scrollTop: $("#"+divId).offset().top-100
-		}, 200);
-		//$("#topic-docs-"+highestTopic).scrollTo("#"+divId);
-		var table = mainWindow.document.getElementById("summary-table-topic-"+highestTopic);
-		//window.alert(table+":"+"summary-table-topic-"+highestTopic);
-		var row = table.rows.namedItem("row_"+mainWindow.optDocId);
+	const highestTopic = mainWindow.docToTopicMap[mainWindow.optDocId];
+	const divId = `topic${highestTopic}-${mainWindow.optDocId}`;
+	let table;
+
+	//scroll to the specified div in highest topic div
+  $('html, body').animate({
+    scrollTop: $(`#${divId}`).offset().top - 100
+  }, 200);
+
+	if (mainWindow.global_study_condition == TA_CONDITION || mainWindow.global_study_condition == TR_CONDITION) {
+		table = mainWindow.document.getElementById(`summary-table-topic-${highestTopic}`);
+	} else {//puts a red border around opt doc column
+		let table = mainWindow.document.getElementById("summary-table");
 	}
-	else{//puts a red border around opt doc column
-		$('html, body').animate({
-			scrollTop: $("#"+divId).offset().top-100
-		}, 200);
-		var table = mainWindow.document.getElementById("summary-table");
-		var row = table.rows.namedItem("row_"+mainWindow.optDocId);
-	}
+
+  let row = $(table).children(`#row_${mainWindow.optDocId}`)[0];
+
 	row.style.border = "4px solid #FF0000";
 
 }
 function addBaselineDocToList(docId){
 	//adds a doc to the ui in baseline
-	var innerHTMLStr = "";
-	var url = backend+"/DisplayData";
-	var docIdWTopic = mainWindow.getDocIdWithTopic(docId);
-	innerHTMLStr += "<tr id=\"row_"+docId+"\"><td style=\"white-space:nowrap; overflow: hidden; max-width: 0; text-overflow: ellipsis;\"><span> <a href='#' id=" + docIdWTopic+" onclick=\"load_doc('" +url + "','" + docIdWTopic + "','" + "0" + "','1', null, false);return false;\">" + mainWindow.docToSummaryMap[docId] +"</a><font>&nbsp;</font></span></td></tr>";
-	mainWindow.allBaselineDocs.push(docId);
-	return innerHTMLStr;
+	const url = `${backend}/DisplayData`;
+	const docIdWTopic = mainWindow.getDocIdWithTopic(docId);
 
+  mainWindow.allBaselineDocs.push(docId);
+  return createDocItemTemplate(docId, url, docIdWTopic, 0);
 }
 function addDocToList(docId, topicIndex){
 	//adds a doc to the list based on its topic
-	var url = backend+"/DisplayData";
-	var docIdWTopic = mainWindow.getDocIdWithTopic(docId);
+	const url = `${backend}/DisplayData`;
+	const docIdWTopic = mainWindow.getDocIdWithTopic(docId);
 
-	mainWindow.topicToAllDisplayedDocs[""+topicIndex].push(docId);
-	var innerHTMLStr = "";
-	var summary = mainWindow.docToSummaryMap[docId];
+	mainWindow.topicToAllDisplayedDocs[`${topicIndex}`].push(docId);
+	const summary = mainWindow.docToSummaryMap[docId];
 
-	innerHTMLStr += "<tr id=\"row_"+docId+"\"><td style=\"white-space:nowrap; overflow: hidden; max-width: 0; text-overflow: ellipsis;\"><span> <a href='#' id=" + docIdWTopic+" onclick=\"load_doc('" +url + "','" + docIdWTopic + "','" + topicIndex + "','1', null, false);return false;\">" + mainWindow.docToSummaryMap[docId] +"</a><font>&nbsp;</font></span></td></tr>";
-	return innerHTMLStr;
+  return mainWindow.createDocItemTemplate(docId, url, docIdWTopic, topicIndex);
 }
 function updateColor(docId){
 	//updates the color and background color based on if they are labeled by user/classifier/undefined

@@ -58,6 +58,19 @@ function get_doc(doc, documents){
 	return "";
 }
 
+function createDocItemTemplate (docId, url, docIdWTopic, topicIndex) {
+	return `
+		<div id="row_${docId}" class="mb-2 ellipsify">
+				<a
+					href='#'
+					id="${docIdWTopic}"
+					title="${mainWindow.docToSummaryMap[docId]}"
+					onclick="load_doc('${url}', '${docIdWTopic}', '${topicIndex}', '1', null, false);return false;">
+						${mainWindow.docToSummaryMap[docId]}
+				</a>
+		</div>`;
+}
+
 //Function adds row with topic content into table (including all data bindings to DOM elements)
 function add_topic(topic, study_condition) {
 	topic_top_docs = [];
@@ -128,7 +141,7 @@ function add_topic(topic, study_condition) {
 		count = count + 1;
 	}
 
-	if(study_condition == TA_CONDITION || study_condition == TR_CONDITION){
+	if(study_condition == TA_CONDITION || study_condition == TR_CONDITION) {
 		let html=`
 		    <div id="topic-${topicindex}" class="document-container p-2">
 		        <div id=topicRow-${topicindex} class="row">
@@ -145,16 +158,7 @@ function add_topic(topic, study_condition) {
 
 			let id = docid_wo_topicid.substring(0 , docid_wo_topicid.length - 1);
 			let summary = mainWindow.docToSummaryMap[id];
-			html += `
-			                <div id="row_${id}" class="mb-2 ellipsify">
-													<a
-														href='#'
-														id="${docIdWTopic}"
-														title="${mainWindow.docToSummaryMap[id]}"
-														onclick="load_doc('${url}', '${docIdWTopic}','${topicindex}','1', null, false);return false;">
-															${mainWindow.docToSummaryMap[id]}
-													</a>
-			                </div>`;
+			html += createDocItemTemplate(id, url, docIdWTopic, topicindex);
 		});
 		html += `
                     </div>
