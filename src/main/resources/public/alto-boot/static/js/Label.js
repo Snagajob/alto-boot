@@ -93,42 +93,56 @@ function addLabel(){
 	document.getElementById("label-submit-button").disabled = true;
 	document.getElementById("label-form").value = "";
 }
-function addLabelName(labelName) {
+
+function validateLabelName(labelName) {
   const appearTime = new Date().getTime() / 1000;
   const currMin = mainWindow.minute;
   const currSec = mainWindow.second;
-
-	allLabelDocMap[labelName] = [];
-	localAllLabelDocMap[labelName] = [];
-	let numLabels = Object.keys(labelSet).length;
-	rand = Math.floor(Math.random() * colors.length);
-	labelToColor[labelName] = colors[numLabels];
-	colors.splice(numLabels, 1);
 
   if (labelName.trim() in labelSet || labelName.trim().toLowerCase() in labelSet) {
     const str = `Label (${labelName.trim().toLowerCase()}) already exists.`;
 
     window.alert(str);
     mainWindow.addAlertLogs(str, appearTime, appearTime, currMin, currSec);
-		return;
-	} else if (labelName == '') {
+    throw new Error();
+  } else if (labelName == '') {
     const str = "A label should have et least one character. Please enter a valid label!";
 
-		window.alert(str);
-		mainWindow.addAlertLogs(str, appearTime, appearTime, currMin, currSec);
-		return;
-	}
-	labelSet[labelName] = true;
-	const url = `${backend}/DisplayData`;
-	let radioStr = '';
+    window.alert(str);
+    mainWindow.addAlertLogs(str, appearTime, appearTime, currMin, currSec);
+    throw new Error();
+  }
+}
+function addLabelName(labelName) {
+  try {
+    validateLabelName(labelName);
+  } catch(e) {
+    return;
+  }
 
-  if (Object.keys(labelSet).length > 0) {
-		sortedLabelSet = Object.keys(labelSet).sort();
-    sortedLabelSet.forEach(label => radioStr += createLabelTemplate(label, url, numDocsPerPage, labelToColor[label]));
-	}
+  labelSet[labelName] = true;
+  const labels = Object.keys(labelSet);
 
-	document.getElementById('label-display').innerHTML = radioStr;
+	allLabelDocMap[labelName] = [];
+	localAllLabelDocMap[labelName] = [];
+  labelToColor[labelName] = colors[labels.length];
+  colors.splice(labels.length, 1);
+
+  insertLabels(labelSet);
 	enableEditDel();
+}
+
+function insertLabels(labelSet) {
+  const url = `${backend}/DisplayData`;
+  const labels = Object.keys(labelSet);
+  let radioStr = '';
+
+  if (labels.length > 0) {
+    sortedLabelSet = labels.sort();
+    sortedLabelSet.forEach(label => radioStr += createLabelTemplate(label, url, numDocsPerPage, labelToColor[label]));
+  }
+
+  $('#label-display').html(radioStr);
 }
 
 function createLabelTemplate(label, url, numDocsPerPage, color) {

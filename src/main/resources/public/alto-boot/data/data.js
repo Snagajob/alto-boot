@@ -21,7 +21,7 @@ function disableSelectLabel(docId){
 		document.getElementById("approve_"+docId).disabled = true;
 }
 function enableSelectLabel(docId){
-	$('#label-form-'+docId).keyup(function(e){    	
+	$('#label-form-'+docId).keyup(function(e){
 		if((e.keyCode == 8 || e.keyCode == 46) && this.value.length == 0){
 			document.getElementById('apply_label_'+docId).disabled = true;
 			document.getElementsByName('label_'+docId)[0].disabled = false;
@@ -49,34 +49,6 @@ function addLabel(docId){//add a new label in data
 	sortLabels(docId, labelName);
 }
 function sortLabels(docId, labelName){
-	mainWindow.allLabelDocMap[labelName] = [];
-	mainWindow.localAllLabelDocMap[labelName] = [];
-	rand = Math.floor(Math.random() * mainWindow.colors.length);
-	mainWindow.labelToColor[labelName] = mainWindow.colors[rand];
-	mainWindow.colors.splice(rand,1);
-
-	if (labelName in mainWindow.labelSet){
-		var appearTime = new Date().getTime() / 1000;
-		window.alert("Label ("+labelName.trim().toLowerCase()+") already exists.");
-		var okTime = new Date().getTime() / 1000;
-		var currMin = mainWindow.minute;
-		var currSec = mainWindow.second;
-		var str = "Label ("+labelName.trim().toLowerCase()+") already exists.";
-		
-		mainWindow.addAlertLogs(str, appearTime, okTime, currMin, currSec);
-		return;
-	}
-	if (labelName == ""){
-		var appearTime = new Date().getTime() / 1000;
-		window.alert("A label should have et least one character. Please enter a valid label!");
-		var okTime = new Date().getTime() / 1000;
-		var currMin = mainWindow.minute;
-		var currSec = mainWindow.second;
-		var str = "A label should have et least one character. Please enter a valid label!";
-		mainWindow.addAlertLogs(str, appearTime, okTime, currMin, currSec);
-		return;
-	}
-	mainWindow.labelSet[labelName] = true;
 	//update the select menue
 	var nodes = document.getElementById("main").children;
 	sortedLabelSet = Object.keys(mainWindow.labelSet).sort();
@@ -92,19 +64,8 @@ function sortLabels(docId, labelName){
 			document.getElementsByName("label_"+nodes[i].id)[0].value = mainWindow.classificationDocLabelMap[nodes[i].id];
 
 	}
-	url = mainWindow.backend+"/DisplayData?topic=Labels";
-	mainWindow.labelSet[labelName] = true;
-	radioStr = "";
-	if(Object.keys(mainWindow.labelSet).length > 0){
-		sortedLabelSet = Object.keys(mainWindow.labelSet).sort();
-		for(j in sortedLabelSet){
-			radioStr += "<div " +
-			"\" id = \""+ "label-div-"+sortedLabelSet[j]+"\"></a>"+"<input type=\"radio\" checked name = \"label-name\" value=\""+
-			sortedLabelSet[j] +"\" onchange ='enableEditDel()'>&nbsp;&nbsp;&nbsp;<a href='#' onclick = \"load_label_docs('"+url+"','"+null+"','"+sortedLabelSet[j]+"','"+0+"','"+mainWindow.numDocsPerPage+"')\"><font  color='"+mainWindow.labelToColor[sortedLabelSet[j]]+"'><b>"+
-			sortedLabelSet[j]+"</b></font></a><br></div>";
-		}
-	}
-	mainWindow.document.getElementById("label-display").innerHTML = radioStr;
+
+	mainWindow.addLabelName(labelName);
 	mainWindow.enableEditDel();
 	mainWindow.takeLogsInServer();
 }
@@ -173,7 +134,7 @@ function saveDocLabelMap(numDisplayDocs, isLabelDocs, docId){
 		var str = "Please select a label or create a new label to assign to the document.";
 		mainWindow.addAlertLogs(str, appearTime, okTime, currMin, currSec);
 		return;
-	
+
 	}
 	if(label_val == "hasPunctuatation"){
 		var appearTime = new Date().getTime() / 1000;
@@ -238,7 +199,7 @@ function saveDocLabelMap(numDisplayDocs, isLabelDocs, docId){
 	}
 	var nodes = document.getElementById("main").children;
 
-	//Changing the color of doc name in main interface, if the label was not deleted 
+	//Changing the color of doc name in main interface, if the label was not deleted
 	if (document.getElementsByName("definer_"+docId)[0].value == 'user'){ //if user defined
 		//update allLabelDocMap
 		if(label_val == ''){//deleting a user label
@@ -254,12 +215,12 @@ function saveDocLabelMap(numDisplayDocs, isLabelDocs, docId){
 			if(!isLabelDocs){
 				index = mainWindow.localAllLabelDocMap[prev_label].indexOf(String(docId));//find index of doc in prev label array
 				mainWindow.localAllLabelDocMap[prev_label].splice(index,1);//remove from prev label array
-				mainWindow.localAllLabelDocMap[label_val].unshift(docId);//add the doc to the new label	
+				mainWindow.localAllLabelDocMap[label_val].unshift(docId);//add the doc to the new label
 			}
 			mainWindow.docLabelMap[docId] = label_val;
 		}
 	}
-	else if(document.getElementsByName("definer_"+docId)[0].value == 'classifier'){ 
+	else if(document.getElementsByName("definer_"+docId)[0].value == 'classifier'){
 		if(label_val == ''){//deleting an automatic label
 			document.getElementsByName("definer_"+docId)[0].value = 'undefined';
 			mainWindow.deleteAutoDocLabel(docId, mainWindow, isLabelDocs);
@@ -288,13 +249,13 @@ function saveDocLabelMap(numDisplayDocs, isLabelDocs, docId){
 	else{//no label assigned before
 		mainWindow.allLabelDocMap[label_val].push(docId);
 		if(!isLabelDocs){
-			mainWindow.localAllLabelDocMap[label_val].push(docId);	
+			mainWindow.localAllLabelDocMap[label_val].push(docId);
 		}
 		if(label_val != ''){
 			document.getElementsByName("definer_"+docId)[0].value = 'user';
 			mainWindow.docLabelMap[docId] = label_val;
 		}
-	}	
+	}
 	updateLabelDisplay(docId, label_val);
 	//update select menue
 	document.getElementsByName('label_'+docId)[0].value = label_val;
@@ -402,7 +363,7 @@ function addDocLabel(numDisplayDocs, isLabelDocs, labelName, labelSetStr){
 		else{//white bar
 			document.getElementById('top-part-'+nodes[i].id).innerHTML = "<table width=\"100%\"><tr bgcolor=\""+"white"+"\" style=\"height:10px\"><td width=\"100%\"></td></tr>"+
 			"<tr style=\"height:10px\"><td style=\"font-size:10px;\" align=\"center\">&nbsp;&nbsp;</td></tr>"+
-			"<tr width=\"100%\"><td align=\"center\">"+"&nbsp;&nbsp"+"</td></tr></table>";		
+			"<tr width=\"100%\"><td align=\"center\">"+"&nbsp;&nbsp"+"</td></tr></table>";
 		}
 
 		approveAndCloseButton = "<input id='approve_"+nodes[i].id+"' type='button' onclick=\"setButton('approveClose'); addApproveCloseLogs('"+nodes[i].id+"'); resetLastLabelTime(); saveDocLabelMap("+numDisplayDocs+","+isLabelDocs+",'"+nodes[i].id+"');\" style='font-size:100%' value='approve and close'>";
@@ -509,7 +470,7 @@ function getLoadTime(){
 			mainWindow.labelDefiner, mainWindow.labelConfidence, currMin, currSec);
 }
 function getLabelViewLoadTime(isRefreshed){
-	
+
 	mainWindow.lastLabelTime = new Date().getTime() / 1000;
 	var currMin = mainWindow.minute;
 	var currSec = mainWindow.second;
@@ -566,6 +527,6 @@ function addChangeLabelLogs(docId){
 		waitTime = Number(mainWindow.applyTime) - Number(mainWindow.lastLabelTime);
 	else
 		waitTime = mainWindow.applyTime - mainWindow.docOpenTime;
-	
+
 	mainWindow.addChangeLabelLogs(mainWindow.applyTime,docId, waitTime, labelName, currMin, currSec);
 }

@@ -146,11 +146,11 @@ function add_topic(topic, study_condition) {
 			let id = docid_wo_topicid.substring(0 , docid_wo_topicid.length - 1);
 			let summary = mainWindow.docToSummaryMap[id];
 			html += `
-			                <div id="row_${id}" class="mb-2">
+			                <div id="row_${id}" class="mb-2 ellipsify">
 													<a
 														href='#'
 														id="${docIdWTopic}"
-														class="document-link"
+														title="${mainWindow.docToSummaryMap[id]}"
 														onclick="load_doc('${url}', '${docIdWTopic}','${topicindex}','1', null, false);return false;">
 															${mainWindow.docToSummaryMap[id]}
 													</a>
