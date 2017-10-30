@@ -18,16 +18,14 @@ html, body {
     top: 56px;
 }
 
+#mainform {
+		width: 100%;
+}
+
 .documents {
     font-size: small;
 		overflow-wrap: normal;
 		word-wrap: normal;
-}
-
-.document-link {
-	white-space:nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
 }
 
 .document-container {
@@ -44,6 +42,12 @@ html, body {
 
 .fixed-card {
 	max-height: calc(100vh - 85px);
+}
+
+.ellipsify {
+	overflow-x: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 /* The white background content wrapper */
