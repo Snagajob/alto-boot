@@ -1,8 +1,12 @@
 var button = "";
 
 function afterLoad(numDocsPerPage, labelName, labelSetStr) {
-	setTimeout(function(){addDocLabel(numDocsPerPage,true,labelName, labelSetStr);disableLabelMenue();}, 100);
+	setTimeout(() => {
+		addDocLabel(numDocsPerPage, true, labelName, labelSetStr);
+		disableLabelMenue();
+	}, 100);
 }
+
 function disableLabelMenue(){
 	var nodes = document.getElementById("main").children;
 	for(var i=0; i < nodes.length; i++) {
@@ -325,132 +329,230 @@ function addDocLabel(numDisplayDocs, isLabelDocs, labelName, labelSetStr){
 		return;
 	}
 
-	var nodes = document.getElementById("main").children;
-	currLabelSet = {};
-	var optionStr = "<option value=''>no label</option>";
-	if(labelSetStr.length > 0){
-		items = labelSetStr.split(",");
-		for(j in items){
-			currLabel = items[j];
-			if(currLabel != "")
-				currLabelSet[currLabel] = true;
-		}
+	let nodes = $('#main').children();
+	let endNode = nodes.length;
+	const currLabelSet = {};
+	let optionStr = `<option value=''>No Label</option>`;
 
-		if(Object.keys(currLabelSet).length > 0){
-			sortedLabelSet = Object.keys(currLabelSet).sort();
-			for(j in sortedLabelSet){
-				optionStr += "<option value='"+sortedLabelSet[j]+"'>"+sortedLabelSet[j]+"</option>";
-			}
-		}
+	if (labelSetStr.length > 0){
+		const labels = labelSetStr.split(',');
+
+		labels.forEach((label) => {
+			if (label != '') currLabelSet[label] = true;
+		});
+
+		const sortedLabelSet = Object.keys(currLabelSet).sort();
+		sortedLabelSet.forEach((label) => {
+			optionStr += `<option value='${label}'>${label}</option>`;
+		});
 	}
-	endNode = nodes.length;
-	if(isLabelDocs) endNode--;
 
-	for(var i = 0; i < endNode; i++) {
-		if(nodes[i].id in mainWindow.docLabelMap){
-			currentLabel = mainWindow.docLabelMap[nodes[i].id];
-			document.getElementById('top-part-'+nodes[i].id).innerHTML = "<table width=\"100%\"><tr bgcolor=\""+mainWindow.labelToColor[currentLabel]+"\" style=\"height:10px\"><td width=\"100%\"></td></tr>"+
-			"<tr style=\"height:10px\"><td style=\"font-size:10px;\" align=\"center\">&nbsp;&nbsp;</td></tr>"+
-			"<tr width=\"100%\"><td align=\"center\">"+currentLabel+"</td></tr></table>";
-		}
-		else if(nodes[i].id in mainWindow.classificationDocLabelMap){
-			currentLabel = mainWindow.classificationDocLabelMap[nodes[i].id];
-			var confidence = Math.round(mainWindow.maxPosteriorLabelProbMap[nodes[i].id]*100);
-			document.getElementById('top-part-'+nodes[i].id).innerHTML = "<table width=\"100%\"><tr bgcolor=\""+mainWindow.labelToColor[currentLabel]+"\" style=\"height:10px\"><td width=\"100%\"></td></tr>"+
-			"<tr style=\"height:10px\"><td style=\"font-size:10px;\" align=\"center\">This document has been auto labeled (confidence level = "+(confidence)+"%).</td></tr>"+
-			"<tr width=\"100%\"><td align=\"center\">"+currentLabel+"</td></tr></table>";
-		}
-		else{//white bar
-			document.getElementById('top-part-'+nodes[i].id).innerHTML = "<table width=\"100%\"><tr bgcolor=\""+"white"+"\" style=\"height:10px\"><td width=\"100%\"></td></tr>"+
-			"<tr style=\"height:10px\"><td style=\"font-size:10px;\" align=\"center\">&nbsp;&nbsp;</td></tr>"+
-			"<tr width=\"100%\"><td align=\"center\">"+"&nbsp;&nbsp"+"</td></tr></table>";
+	if (isLabelDocs) endNode--;
+
+	for (let i = 0; i < endNode; i++) {
+		let node = nodes[i];
+		let currentLabel;
+
+		if (node.id in mainWindow.docLabelMap) {
+			currentLabel = mainWindow.docLabelMap[node.id];
+
+			$(`#top-part-${node.id}`).html(`
+				<table width="100%">
+					<tr bgcolor="${mainWindow.labelToColor[currentLabel]}" style="height:10px">
+						<td width="100%"></td>
+					</tr>
+					<tr style="height:10px">
+						<td style="font-size:10px;" align="center">&nbsp;&nbsp;</td>
+					</tr>
+					<tr width="100%">
+						<td align="center">${currentLabel}</td>
+					</tr>
+				</table>`);
+		} else if (node.id in mainWindow.classificationDocLabelMap) {
+			currentLabel = mainWindow.classificationDocLabelMap[node.id];
+			const confidence = Math.round(mainWindow.maxPosteriorLabelProbMap[node.id] * 100);
+
+			$(`#top-part-${node.id}`).html(`
+				<table width="100%">
+					<tr bgcolor="${mainWindow.labelToColor[currentLabel]}" style="height:10px">
+						<td width="100%"></td>
+					</tr>
+					<tr style="height:10px">
+						<td style="font-size:10px;" align="center">This document has been auto labeled (confidence level = ${confidence}%).</td>
+					</tr>
+					<tr width="100%">
+						<td align="center">${currentLabel}</td>
+					</tr>
+				</table>`);
+		} else { //white bar
+			$(`#top-part-${node.id}`).html(`
+				<table width="100%"><tr bgcolor="white" style="height:10px">
+					<td width="100%"></td>
+				</tr>
+				<tr style="height:10px">
+					<td style="font-size:10px;" align="center">&nbsp;&nbsp;</td>
+				</tr>
+				<tr width="100%">
+					<td align="center">&nbsp;&nbsp</td>
+				</tr>
+			</table>`);
 		}
 
-		approveAndCloseButton = "<input id='approve_"+nodes[i].id+"' type='button' onclick=\"setButton('approveClose'); addApproveCloseLogs('"+nodes[i].id+"'); resetLastLabelTime(); saveDocLabelMap("+numDisplayDocs+","+isLabelDocs+",'"+nodes[i].id+"');\" style='font-size:100%' value='approve and close'>";
-		//approveButton = "<input id='approve_"+nodes[i].id+"' type='button' onclick=\"setButton('approve'); addApproveLogs('"+nodes[i].id+"'); resetLastLabelTime(); saveDocLabelMap("+numDisplayDocs+","+isLabelDocs+",'"+nodes[i].id+"')\" style='font-size:100%' value='approve'>";
-		newLabelTextBox = "<input id='label-form-"+nodes[i].id+"' placeholder='create new label' name = 'label-form-"+nodes[i].id+"' oninput='disableSelectLabel(\""+nodes[i].id+"\""+")' onkeypress='enableSelectLabel(\""+nodes[i].id+"\")' size='20' type='text' style='font-size:100%'>";
-		closeButton="<input id='close_"+nodes[i].id+"' type='button' onclick='addCloseNormalDocLogs();' style='font-size:100%' value='close'>";
-		applycloseLabelButton = "<input id='apply_label_"+nodes[i].id+"' type='button' onclick=\" setButton('applyClose'); addApplyCloseLogs('"+nodes[i].id+"'); resetLastLabelTime(); saveDocLabelMap("+numDisplayDocs+","+isLabelDocs+",'"+nodes[i].id+"');\" style='font-size:100%' disabled value='apply and close'>";
-		applyLabelButton = "<input id='apply_label_"+nodes[i].id+"' type='button' onclick=\"setButton('apply'); addApplyLogs('"+nodes[i].id+"'); resetLastLabelTime(); saveDocLabelMap("+numDisplayDocs+","+isLabelDocs+",'"+nodes[i].id+"')\" style='font-size:100%' disabled value='apply'>";
-		deleteLabelButton = "<input id='delete_"+nodes[i].id+"' type='button' onclick=\"setButton('deleteLabel');addDeleteLabelViewLogs('"+nodes[i].id+"');saveDocLabelMap("+numDisplayDocs+","+isLabelDocs+",'"+nodes[i].id+"');resetLastLabelTime();  \" style='font-size:100%' value='delete'>";
-		var innerHTMLStr ="";
-		if(!isLabelDocs){//one doc per page
-			innerHTMLStr = "<form onsubmit=\"setButton('enter'); addApplyCloseLogs('"+nodes[i].id+"'); saveDocLabelMap("+numDisplayDocs+","+isLabelDocs+",'"+nodes[i].id+"'); return false;\"><table border=\"0\" style=\"background-color:white; top:370px; position:fixed;\" id = 'text_"+nodes[i].id+"' width='100%'>";
-		}
-		else{
+		const approveAndCloseButton = `
+			<input id='approve_${node.id}'
+				type='button'
+				onclick="setButton('approveClose');
+								 addApproveCloseLogs('${node.id}');
+								 resetLastLabelTime();
+								 saveDocLabelMap(${numDisplayDocs}, ${isLabelDocs},'${node.id}');"
+				style='font-size:100%'
+				value='Approve and Close'>`;
+		const newLabelTextBox = `
+			<input id='label-form-${node.id}'
+				placeholder='Create new label'
+				name='label-form-${node.id}'
+				oninput="disableSelectLabel('${node.id}')"
+				onkeypress="enableSelectLabel('${node.id}')"
+				size='20'
+				type='text'
+				style='font-size:100%'>`;
+		const closeButton=`
+			<input id='close_${node.id}'
+				type='button'
+				onclick='addCloseNormalDocLogs();'
+				style='font-size:100%'
+				value='Close'>`;
+		const applycloseLabelButton = `
+			<input id='apply_label_${node.id}'
+				type='button'
+				onclick="setButton('applyClose');
+								 addApplyCloseLogs('${node.id}');
+								 resetLastLabelTime();
+								 saveDocLabelMap(${numDisplayDocs}, ${isLabelDocs}, '${node.id}');"
+				style='font-size:100%'
+				disabled
+				value='Apply and Close'>`;
+		const applyLabelButton = `
+			<input id='apply_label_${node.id}'
+				type='button'
+				onclick="setButton('apply');
+								 addApplyLogs('${node.id}');
+								 resetLastLabelTime();
+								 saveDocLabelMap(${numDisplayDocs}, ${isLabelDocs},'${node.id}')"
+				style='font-size:100%'
+				disabled
+				value='Apply'>`;
+		const deleteLabelButton = `
+			<input id='delete_${node.id}'
+				type='button'
+				onclick="setButton('deleteLabel');
+								 addDeleteLabelViewLogs('${node.id}');
+								 saveDocLabelMap(${numDisplayDocs}, ${isLabelDocs}, '${node.id}');
+								 resetLastLabelTime();"
+				style='font-size:100%'
+				value='Delete'>`;
+		let innerHTMLStr = '';
+
+		if (!isLabelDocs) {//one doc per page
+			innerHTMLStr = `
+				<form onsubmit="setButton('enter');
+												addApplyCloseLogs('${node.id}');
+												saveDocLabelMap(${numDisplayDocs}, ${isLabelDocs}, '${node.id}');
+												return false;">
+					<table border="0" style="background-color:white; top:370px; position:fixed;" id='text_${node.id}' width='100%'>`;
+		} else {
 			//bug here. one doc in label. enter gives error
-			innerHTMLStr = "<form onsubmit=\"saveDocLabelMap("+numDisplayDocs+","+isLabelDocs+",'"+nodes[i].id+"'); return false;\"><table border=\"0\" style=\"background-color:white;\" id = 'text_"+nodes[i].id+"' width='100%'>";
+			innerHTMLStr = `
+				<form onsubmit="saveDocLabelMap(${numDisplayDocs}, ${isLabelDocs}, '${node.id}'); return false;">
+					<table border="0" style="background-color:white;" id='text_${node.id}' width='100%'>`;
 		}
-		innerHTMLStr += "<tr> <td colspan=\"2\"><hr /></td></tr>";
+		innerHTMLStr += `<tr>
+			<td colspan="2"><hr /></td>
+		</tr>`;
 
-		innerHTMLStr += "<tr><td width=\"20%\"><select id='label_"+nodes[i].id+"' name='label_"+nodes[i].id+"' onchange='addChangeLabelLogs(\""+nodes[i].id+"\"); resetLastLabelTime(); saveDocLabelMap(\""+numDisplayDocs+"\","+isLabelDocs+",\""+nodes[i].id+"\")' >"+
+		innerHTMLStr += `<tr>
+			<td width="20%">
+				<select id='label_${node.id}'
+								name='label_${node.id}'
+								onchange='addChangeLabelLogs("${node.id}");
+													resetLastLabelTime();
+													saveDocLabelMap(${numDisplayDocs}, ${isLabelDocs}, "${node.id}")'>
+					${optionStr}
+				</select>
+				<hidden name='definer_${node.id}' value='undefined'/>
+			</td>`;
 
-		optionStr+"</select><hidden name='definer_"+nodes[i].id+"' value='undefined'  />"+"</td>";
-
-		if(!isLabelDocs){//normal view
-			if(nodes[i].id in mainWindow.classificationDocLabelMap){
-				innerHTMLStr += "<td>"+approveAndCloseButton+"&nbsp; &nbsp;</td>";
+		if (!isLabelDocs) {//normal view
+			if (node.id in mainWindow.classificationDocLabelMap) {
+				innerHTMLStr += `<td>${approveAndCloseButton}&nbsp; &nbsp;</td>`;
 			}
 
-			innerHTMLStr += "</tr>"
-				+"<tr><td width=\"20%\"align='left'>"+newLabelTextBox+"</td>";
-			innerHTMLStr += "<td>"+applycloseLabelButton+"&nbsp; &nbsp;</td></tr>";
-			innerHTMLStr += "<tr><td></td><td align='right'>"+closeButton+"&nbsp; &nbsp;</td></tr>";
-		}
-		else{//label view
-			if(i == endNode-1){
-				var labelDocNum = mainWindow.allLabelDocMap[labelName].length;
-				var lastSeenId = nodes[i].id;
-				if (lastSeenId === mainWindow.allLabelDocMap[labelName][labelDocNum-1])
-					document.getElementById("nextButton").disabled = true;
+			innerHTMLStr += `
+				</tr>
+				<tr>
+					<td width="20%" align='left'>${newLabelTextBox}</td>
+					<td>${applycloseLabelButton}&nbsp; &nbsp;</td>
+				</tr>
+				<tr>
+					<td></td>
+					<td align='right'>${closeButton}&nbsp; &nbsp;</td>
+				</tr>`;
+		} else { //label view
+			if (i == endNode-1) {
+				let labelDocNum = mainWindow.allLabelDocMap[labelName].length;
+
+				if (node.id === mainWindow.allLabelDocMap[labelName][labelDocNum - 1])
+					document.getElementById('nextButton').disabled = true;
 			}
-			if(i == 0){
-				var firstSeenId = nodes[i].id;
-				if(firstSeenId === mainWindow.allLabelDocMap[labelName][0]){
-					document.getElementById("prevButton").disabled = true;
+			if (i == 0) {
+				if(node.id === mainWindow.allLabelDocMap[labelName][0]) {
+					document.getElementById('prevButton').disabled = true;
 				}
 			}
-			innerHTMLStr += "<td>"+deleteLabelButton+"</td>";
-			innerHTMLStr += "</tr>";
+			innerHTMLStr += `
+					<td>${deleteLabelButton}</td>
+				</tr>`;
 		}
-		innerHTMLStr += "</table></form>";
-		document.getElementById('low-part-'+nodes[i].id).innerHTML = innerHTMLStr;
-		$("#label-form-"+nodes[i].id).focus();
+		innerHTMLStr += '</table></form>';
+		$(`#low-part-${node.id}`).html(innerHTMLStr);
+		$(`#label-form-${node.id}`).focus();
 	}
 
-	docToLabelString = getParameterByName("classificationDocLabelMap");
-	docsToLabels = docToLabelString.split(",");
-	if (docToLabelString.length>0){
-		for (i = 0; i < docsToLabels.length; i++){
-			temp = docsToLabels[i].split(":");
-			docId = temp[0];
-			label = temp[1];
+	let docToLabelString = getParameterByName('classificationDocLabelMap');
+	let docsToLabels = docToLabelString.split(',');
+
+	if (docToLabelString.length > 0) {
+		for (let i = 0; i < docsToLabels.length; i++){
+			let temp = docsToLabels[i].split(':');
+			let docId = temp[0];
+			let label = temp[1];
 			classificationDocLabelMap[docId] = label;
-			document.getElementsByName("label_"+docId)[0].value = label;
-			document.getElementsByName("definer_"+docId)[0].value = 'classifier';
+			document.getElementsByName(`label_${docId}`)[0].value = label;
+			document.getElementsByName(`definer_${docId}`)[0].value = 'classifier';
 
 		}
 	}
-	docToLabelString = getParameterByName("docLabelMap");
-	docsToLabels = docToLabelString.split(",");
+	docToLabelString = getParameterByName('docLabelMap');
+	docsToLabels = docToLabelString.split(',');
 
 	//setting different labels color
-	if (docToLabelString.length>0){
+	if (docToLabelString.length > 0){
 		for (i = 0; i < docsToLabels.length; i++){
-			temp = docsToLabels[i].split(":");
-			docId = temp[0];
-			label = temp[1];
+			let temp = docsToLabels[i].split(':');
+			let docId = temp[0];
+			let label = temp[1];
 			docLabelMap[docId] = label;
-			document.getElementsByName("label_"+docId)[0].value = label;
-			$("#"+"text_"+docId).css('color', mainWindow.labelToColor[label]);
-			$("#"+"text_"+docId).css('font-weight', 'bold');
-			document.getElementsByName("definer_"+docId)[0].value = 'user';
+			document.getElementsByName(`label_${docId}`)[0].value = label;
+			$(`#text_${docId}`).css({
+				color: mainWindow.labelToColor[label],
+				'font-weight': 'bold'});
+			document.getElementsByName(`definer_${docId}`)[0].value = 'user';
 		}
 	}
 
-	docid = getParameterByName("docid");
-	var e=document.getElementById(docid);
-	document.getElementById("main").style.display = "block";
+	const docid = getParameterByName('docid');
+	let e = document.getElementById(docid);
+	document.getElementById('main').style.display = 'block';
 	e.scrollIntoView();
 }
 function getParameterByName(name) {
