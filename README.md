@@ -12,6 +12,8 @@ Java 1.8
 
 Docker
 
+Lombok Plugin (Intellij or Eclipse)
+
 ## Compiling and Running
 Let BASEDIR be the directory of ALTO code.
 
@@ -41,7 +43,7 @@ You can choose to run the application with your own JRE, or build using the dock
 
 
 
-- Open your browser: http://localhost:8080/alto-release/
+- Open your browser: http://localhost:8080/alto-boot
 - Start using ALTO (see next step)
 
 

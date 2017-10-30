@@ -1,0 +1,48 @@
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src="static/js/Label.js"></script>
+    <script type="text/javascript" charset="utf-8" src="static/js/main.js"></script>
+    <script type="text/javascript" charset="utf-8" src="data/data.js"></script>
+    <link rel="stylesheet" href="data/data.css" />
+
+    <script th:inline="javascript">
+    /*<![CDATA[*/
+
+      function onDetailLoad() {
+        var numDisplayDocs = [[${numDisplayDocs}]];
+        var labelSetStr = [[${labelSetStr}]];
+
+        addDocLabel(numDisplayDocs, false, null, labelSetStr);
+        getLoadTime();
+      }
+    /*]]>*/
+    </script>
+  </head>
+
+<body onload="setTimeout(onDetailLoad, 100); mainWindow = window.opener.mainWindow;">
+<table width="100%">
+  <tr>
+    <td>
+      <div th:id="${'top-part-' + document.id}"></div>
+    </td>
+  </tr>
+  <tr>
+    <td width="100%">
+      <form name="mainForm">
+        <div style="display:none" id="main" class="main">
+            <div class ="segment" style="height:300px; overflow:scroll;" th:id="${document.id}">
+              <span th:utext="${document.text}"></span>
+            </div>
+        </div>
+      </form>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <div th:id="${'low-part-' + document.id}"></div>
+    </td>
+  </tr>
+</table>
+</body>
+</html>
