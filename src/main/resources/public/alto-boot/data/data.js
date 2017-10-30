@@ -316,7 +316,7 @@ function saveDocLabelMap(numDisplayDocs, isLabelDocs, docId){
 function resetLastLabelTime(){
 	if(mainWindow.isLabelView){
 		//update the lastLabelEvent to current time
-		mainWindow.lastLabelTime = new Date().getTime() / 1000;
+		mainWindow.lastLabelTime = Date.now() / 1000;
 	}
 }
 function setButton(buttonName){
