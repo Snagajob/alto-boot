@@ -35,6 +35,9 @@ html, body {
 .document-titles {
 	min-height: 40px;
 }
+.document-titles h2:first-of-type {
+	padding-left: 0;
+}
 
 .o-y-auto {
 	overflow-y: auto;

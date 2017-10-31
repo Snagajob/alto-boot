@@ -219,31 +219,35 @@ function render_input(json, study_condition)
 		document.getElementById("progress-header-div").style.visibility = "hidden";
 	}
 }
-function displayBaselineDocs(){
+function displayBaselineDocs() {
+	const url = `${backend}/DisplayData`;
+	let baselineDocsStr = "";
+	let htmlStr = '';
 
-	url = backend + "/DisplayData";
-	var baselineDocsStr = "";
-	var htmlStr = "";
-	htmlStr += "<table id=\"summary-table\" >";
-	for(var i in shuffledInitialBaselineDocs){
-		var docid_wo_topicid = shuffledInitialBaselineDocs[i];
+	for (let i in shuffledInitialBaselineDocs) {
+		let docid_wo_topicid = shuffledInitialBaselineDocs[i];
+		let docIdWTopic = mainWindow.getDocIdWithTopic(docid_wo_topicid);
+
 		allBaselineDocs.push(docid_wo_topicid);
-		baselineDocsStr += docid_wo_topicid+",";
-		var docIdWTopic = mainWindow.getDocIdWithTopic(docid_wo_topicid);
-		htmlStr += "<tr><td style=\"white-space:nowrap; overflow: hidden; max-width: 0; text-overflow: ellipsis;\"><span> <a href='#' id=" + docIdWTopic+" onclick=\"load_doc('" +url + "','" + docIdWTopic + "','" + "0" + "','1', null, false);return false;\">" + mainWindow.docToSummaryMap[docid_wo_topicid] +"</a><font>&nbsp;</font></span></td></tr>";
-		numDisplayDocs = "1";
+		baselineDocsStr += `${docid_wo_topicid},`;
+		htmlStr += mainWindow.createDocItemTemplate(docid_wo_topicid, url, docIdWTopic, 0);
 	}
-	htmlStr += "</table>";
-	$(htmlStr).appendTo("#mainform_items")
+	$(`
+		<div id="summary-table">
+			${htmlStr}
+		</div>
+	`).appendTo("#mainform_items")
 }
 
-function load_input(username, study_condition)
-{
+function load_input(username, study_condition) {
 	var endpoint=backend+"/DataLoader?username="+username;
 	//loading different conditions
 	itm_done = false;
-	if(study_condition === LA_CONDITION || study_condition === LR_CONDITION)//baseline
-		document.getElementById('title').style.visibility = 'hidden';
+
+	// baseline
+	if(study_condition === LA_CONDITION || study_condition === LR_CONDITION) {
+		$('#themes-title').remove();
+	}
 	// SHOW overlay
 	$('#loading').modal({
 		keyboard: false
@@ -312,8 +316,9 @@ function load_prev_label_docs(url, labelName, firstSeenIndex, numDocsPerPage){
 
 function load_label_docs(url, newWindow, labelName, startIndex, numDocsPerPage, isRefreshed){
 	mainWindow.loadedLabelName = labelName;
-	clickLabelTime = new Date().getTime() / 1000;
-	if(newWindow == "null"){
+	clickLabelTime = Date.now() / 1000;
+
+	if (newWindow == null) {
 		mainWindow.takeLogsInServer();
 		isLabelView = true;
 		for(var i=0; i<Object.keys(mainWindow.localAllLabelDocMap).length; i++){
@@ -327,7 +332,7 @@ function load_label_docs(url, newWindow, labelName, startIndex, numDocsPerPage, 
 			}
 		}
 	}
-	if(newWindow != "null"){//in data page
+	if (newWindow != null) { //in data page
 		mainWindow.takeLogsInServer();
 		mainWindow.isLabelView = true;
 		docToTopicMap = mainWindow.docToTopicMap;
@@ -341,7 +346,7 @@ function load_label_docs(url, newWindow, labelName, startIndex, numDocsPerPage, 
 		corpusname = mainWindow.corpusname;
 	}
 
-	if(labelName in mainWindow.allLabelDocMap == false || mainWindow.allLabelDocMap[labelName].length == 0){
+	if (labelName in mainWindow.allLabelDocMap == false || mainWindow.allLabelDocMap[labelName].length == 0) {
 		var appearTime = new Date().getTime() / 1000;
 		window.alert("No documents to show!");
 		var okTime = new Date().getTime() / 1000;
@@ -351,7 +356,7 @@ function load_label_docs(url, newWindow, labelName, startIndex, numDocsPerPage, 
 		mainWindow.addAlertLogs(str, appearTime, okTime, currMin, currSec);
 		return;
 	}
-	if (Object.keys(docIdToIndexMap).length == 0){
+	if (Object.keys(docIdToIndexMap).length == 0) {
 		fillDocToIndexMap();
 	}
 	AL = false;
