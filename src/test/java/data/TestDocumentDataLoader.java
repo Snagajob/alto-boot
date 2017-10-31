@@ -18,11 +18,12 @@ public class TestDocumentDataLoader {
         loader.dataDirectory = filePath.substring(0, filePath.lastIndexOf('/'));
         loader.corpusName = "synthetic-3";
 
+        loader.init();
         Map<Integer, AltoDocument> all = loader.getAllGroupedById();
         Assert.assertEquals(3, all.keySet().size());
 
         AltoDocument d0 = all.get(0);
-        Assert.assertEquals("cat cat moose moose cat", d0.getText());
+        Assert.assertEquals("<p> cat cat moose moose cat </p>", d0.getText().trim());
         Assert.assertEquals(0, (int)d0.getId());
     }
 
