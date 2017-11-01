@@ -676,14 +676,14 @@ function shuffle(array) {
 //----------------------------------------------------------------------------------------
 //logging functions
 function addCloseNormalDocLogs(){
-	var closeTime = new Date().getTime()/1000;
+	var closeTime = Date.now() / 1000;
 	var currMin = mainWindow.minute;
 	var currSec = mainWindow.second;
 	mainWindow.addCloseNormalDocLogs(closeTime, currMin, currSec);
 	window.close();
 }
 function closeWindowLabelView(labelName){//for label view
-	var closeTime = new Date().getTime()/1000;
+	var closeTime = Date.now () / 1000;
 	var currMin = mainWindow.minute;
 	var currSec = mainWindow.second;
 	mainWindow.addCloseLabelViewLogs(closeTime, labelName, currMin, currSec);

@@ -170,7 +170,7 @@ a:link {
 
 #label-display {
 	border: 1px solid darkgrey;
-	padding: 20px;
+	padding: 10px 20px;
 	height: 150px;
 	overflow-y: auto;
 	margin-bottom: 20px;

@@ -1,10 +1,22 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
     <script type="text/javascript" charset="utf-8" src="static/js/Label.js"></script>
     <script type="text/javascript" charset="utf-8" src="static/js/main.js"></script>
     <script type="text/javascript" charset="utf-8" src="data/data.js"></script>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous" />
     <link rel="stylesheet" href="data/data.css" />
+
+    <style>
+      html, body {
+        background-color: #eee;
+      }
+      #container {
+          position: relative;
+          top: 56px;
+      }
+    </style>
 
     <script th:inline="javascript">
     /*<![CDATA[*/
@@ -40,53 +52,33 @@
 </head>
 
 <body>
-  <form name="mainForm">
-    <div align="center" style="display:none" id="main" class="main">
-        <div th:each="labelDoc : ${labelDocs}" th:id="${labelDoc.id}" class="segment">
-            <table width="100%">
-                <tr>
-                    <td>
-                        <div th:id="${'top-part-' + labelDoc.id}"></div>
-                    </td>
-                </tr>
-                <tr style="outline: 0px solid">
-                    <td width="100%">
-                        <div class="segment" style="height:300px; overflow:scroll" th:id="${labelDoc.id}">
-                            <table>
-                                <tr>
-                                    <td>
-                                        <span th:utext="${labelDoc.text}" />
-                                    </td>
-                                </tr>
-                            </table>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <div th:id="${'low-part-' + labelDoc.id}"></div>
-                    </td>
-                </tr>
-            </table>
+  <nav class="navbar navbar-dark bg-dark fixed-top">
+    <span class="navbar-brand mb-0 h1">Interactive Document Labeling</span>
+    <span class="navbar-text">Associated Documents</span>
+  </nav>
+  <div id="container" class="container">
+    <form name="mainForm">
+      <div id="main" class="main">
+        <div th:id="${labelDoc.id}" th:each="labelDoc : ${labelDocs}" class="card mt-3 p-3">
+          <div class="card-body">
+            <h6 th:id="${'subtitle-' + labelDoc.id}" class="card-subtitle mb-2">
+              <span class="badge badge-pill label"></span>
+            </h6>
+            <h6 th:id="${'subtitle-' + labelDoc.id + '-confidence'}" class="card-subtitle mb-2 text-muted"></h6>
+            <p class="card-text mt-2" th:utext="${labelDoc.text}"></p>
+            <button th:id="${'delete-' + labelDoc.id}" class="btn btn-link">Delete</button>
+          </div>
         </div>
 
-        <table align="center" border="0" style="background-color:white; bottom:0px; right:-6px; position:fixed;" width="100%">
-            <tr>
-                <td width="50%" align="left">
-                    <input type="button" style="font-size:100%" id="prevButton" value="show prev 10" />
-                </td>
-                <td width="50%" align="right">
-                    <input type="button" style="font-size:100%" id="nextButton" value="show next 10" />
-                </td>
-            </tr>
-            <tr>
-                <td></td>
-                <td align="right">
-                    <input id="closeButton" type="button" style="font-size:100%" value="close" />
-                </td>
-            </tr>
-        </table>
-    </div>
-  </form>
+        <div class="d-flex justify-content-center mt-3">
+          <button class="btn btn-light mr-3" id="prevButton">Previous 10 Documents</button>
+          <button class="btn btn-light" id="nextButton">Next 10 Documents</button>
+        </div>
+        <div class="d-flex mt-3 justify-content-center">
+          <button class="btn btn-link" id="closeButton">Close</button>
+        </div>
+      </div>
+    </form>
+  </div>
 </body>
 </html>
