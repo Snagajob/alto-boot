@@ -394,6 +394,7 @@ function addDocLabel(numDisplayDocs, isLabelDocs, labelName, labelSetStr) {
 			const newLabelTextBox = `
 				<input id='label-form-${node.id}'
 					placeholder='New label'
+					autofocus
 					class='form-control'
 					name='label-form-${node.id}'
 					oninput="disableSelectLabel('${node.id}')"
@@ -422,10 +423,8 @@ function addDocLabel(numDisplayDocs, isLabelDocs, labelName, labelSetStr) {
 					class='btn btn-link'
 					onclick='addCloseNormalDocLogs();'
 				>Close</button>`;
-			let newLabelContainer = $(`#new-label-container-${node.id}`);
 
-			newLabelContainer.html(newLabelTextBox);
-			$(newLabelContainer).children('input').focus();
+			$(`#new-label-container-${node.id}`).html(newLabelTextBox);
 			$(`#close-${node.id}`).html(closeButton);
 			if (node.id in mainWindow.classificationDocLabelMap) {
 				$(`#label-and-close-${node.id}`).html(approveAndCloseButton);
@@ -440,12 +439,12 @@ function addDocLabel(numDisplayDocs, isLabelDocs, labelName, labelSetStr) {
 				saveDocLabelMap(numDisplayDocs, isLabelDocs, `${node.id}`);
 				resetLastLabelTime();
 			});
-			// if (i == endNode-1) {
-			// 	let labelDocNum = mainWindow.allLabelDocMap[labelName].length;
-			//
-			// 	if (node.id === mainWindow.allLabelDocMap[labelName][labelDocNum - 1])
-			// 		document.getElementById('nextButton').disabled = true;
-			// }
+			if (i == nodes.length - 1) {
+				let labelDocNum = mainWindow.allLabelDocMap[labelName].length;
+
+				if (node.id === mainWindow.allLabelDocMap[labelName][labelDocNum - 1])
+					document.getElementById('nextButton').disabled = true;
+			}
 			if (i == 0) {
 				if(node.id === mainWindow.allLabelDocMap[labelName][0]) {
 					document.getElementById('prevButton').disabled = true;
