@@ -332,7 +332,14 @@ function generateLabelSelectTemplate(labelSetStr, id, numDisplayDocs, isLabelDoc
 		});
 
 		currLabels.sort().forEach((label) => {
-			optionStr += `<option value='${label}'>${label}</option>`;
+			let option = `<option value='${label}'`;
+
+			if (mainWindow.allLabelDocMap[label].indexOf(id) > -1) {
+				option += ' selected';
+			}
+
+			option += `>${label}</option>`;
+			optionStr += option;
 		});
 	}
 
