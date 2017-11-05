@@ -49,18 +49,6 @@ var usedLabels = [];
 var newlyAddedLabel = false;//if a label existed, but no training data was in it, and now is added, set to true
 var applyTime = 0; //label apply/approve/change time log
 
-function disableEnableAddLabel(){
-	$('#label-form').keyup(function(e){    	
-		//window.alert(e.keyCode);
-		if((e.keyCode == 8 || e.keyCode == 46) && this.value.length == 0){
-			document.getElementById("label-submit-button").disabled = true;
-		}
-		else{
-			document.getElementById("label-submit-button").disabled = false;
-		}
-	});
-}
-
 function get_doc(doc, documents){
 	for (var d in documents){
 		if (documents[d]["name"]==doc){
@@ -68,63 +56,76 @@ function get_doc(doc, documents){
 		}
 	}
 	return "";
-}		
+}
 
-function add_topic(topic, study_condition)
+function createDocItemTemplate (docId, url, docIdWTopic, topicIndex) {
+	return `
+		<div id="row_${docId}" class="mb-2 ellipsify">
+				<a
+					href='#'
+					id="${docIdWTopic}"
+					title="${mainWindow.docToSummaryMap[docId]}"
+					onclick="load_doc('${url}', '${docIdWTopic}', '${topicIndex}', '1', null, false);return false;">
+						${mainWindow.docToSummaryMap[docId]}
+				</a>
+		</div>`;
+}
+
 //Function adds row with topic content into table (including all data bindings to DOM elements)
-{
+function add_topic(topic, study_condition) {
 	topic_top_docs = [];
 	global_study_condition = study_condition;
 	if (Object.keys(docIdToIndexMap).length == 0)
 		fillDocToIndexMap();
-	var topicindex=topic["topicindex"];
+
+	let topicindex = topic["topicindex"];
 	labeledTopicsDocs[topicindex] = [];
 
-	var wrds="";
-	var words = topic["words"];
-	var words_string = "";
-	var count = 0;
+	let wrds='';
+	let words = topic['words'];
+	let words_string = '';
+	let count = 0;
 
-	var size = 30;
-	var largest = 40;
+	let size = 30;
+	let largest = 40;
 	wordCnt = 0;
-	for (var w in words) {
-		var weight = words[w]["weight"];
-		var word = words[w]["word"];
+
+	words.forEach((w) => {
 		if (count == 0) {
 			size = 20;
-			largest = size / weight;
+			largest = size / w.weight;
 		} else {
-			size = weight * largest;
+			size = w.weight * largest;
 		}
 		if (size < 10) {
 			size = 10;
 		}
-		wrds=wrds+ "<span style='font-size:" + size + "px'>" + word+"&nbsp;&nbsp;</span> ";
 
-		words_string = words_string + word + "+";
+		wrds = `${wrds}<span style='font-size:${size}px'>${w.word}</span> `;
+
+		words_string += w.word + "+";
 		count += 1;
-	}
+	});
 
-	topicdocs[""+topicindex] = new Array();
-	topicToALTopIds[""+topicindex] = new Array();
-	topicToAllDisplayedDocs[""+topicindex] = new Array();
-	
+	topicdocs[`${topicindex}`] = [];
+	topicToALTopIds[`${topicindex}`] = [];
+	topicToAllDisplayedDocs[`${topicindex}`] = [];
+
 	//create shuffled doc index array
-	words_string = words_string + "]";
-	words_string = words_string.replace("+]", "");
-	topicwords[""+topicindex] = words_string;
-	var documents = topic["docs"];
-	var count = 0;
-	var x = 0;
+	words_string += ']';
+	words_string = words_string.replace('+]', '');
+	topicwords['' + topicindex] = words_string;
+
+	let documents = topic["docs"];
+	count = 0;
+	let x = 0;
 	for (var d in documents) {
 		var lookup=get_doc(documents[d], docs);
 		if (count < topic_doc_show_num) {
 			url = backend + "/DisplayData";
 			url = url+"?topic=" + words_string;
 			var docid = "topic" + topicindex + "-" + lookup["name"];
-			document.getElementById("data-col").style.width = "70%";
-			document.getElementById("label-col").style.width = "30%";
+
 			if(study_condition == TA_CONDITION || study_condition == TR_CONDITION){
 				topicdocs[""+topicindex].push(lookup["name"]);
 				topicToAllDisplayedDocs[""+topicindex].push(lookup["name"]);
@@ -139,37 +140,36 @@ function add_topic(topic, study_condition)
 		}
 		count = count + 1;
 	}
-	//window.alert(topicToAllDisplayedDocs[0]);
 
-	if(study_condition == TA_CONDITION || study_condition == TR_CONDITION){
-		var html="";
-		html=html+'<hr style="width:100%"/>';
-		html=html+'<div class="row data-item"  id="topic-'+topicindex+'">';
-		html=html+'	<div class="span16">';
-		html=html+'	<div class="row" id=topicRow-'+topicindex+'>';
-		html=html+'	<div class="span4 words" id="topic-' + topicindex + '-words">' + wrds + '</div>';
-		html=html+"	<div id=\"topic-docs-"+topicindex +"\" class=\"span12\" style=\"font-size:small; text-wrap: avoid; white-space: wrap; overflow-wrap: normal; word-wrap: normal\"><table id=\"summary-table-topic-"+topicindex+"\">";
-		for(var d in topic_top_docs){
-			var docIdWTopic = topic_top_docs[d];
-			var tmp = docIdWTopic.split("-");
-			var topicindex = tmp.splice(0,1);
-			var docid_wo_topicid = "";
-			for(i in tmp){
-				docid_wo_topicid += tmp[i]+"-";
-			}
-			var id = docid_wo_topicid.substring(0 , docid_wo_topicid.length-1);		
-			var summary = mainWindow.docToSummaryMap[id];
-			html += "<tr id=\"row_"+id+"\"><td style=\"white-space:nowrap; overflow: hidden; max-width: 0; text-overflow: ellipsis;\"><span> <a href='#' id=" + docIdWTopic+" onclick=\"load_doc('" +url + "','" + docIdWTopic + "','" + topicindex + "','1', null, false);return false;\">" + mainWindow.docToSummaryMap[id] +"</a><font>&nbsp;</font></span></td></tr>";
-		}
-		html += "</table></div>";
+	if(study_condition == TA_CONDITION || study_condition == TR_CONDITION) {
+		let html=`
+		    <div id="topic-${topicindex}" class="document-container p-2">
+		        <div id=topicRow-${topicindex} class="row">
+                <div id="topic-${topicindex}-words" class="col col-3 words">${wrds}</div>
+		            <div id="topic-docs-${topicindex}" class="col col-9 documents">
+		                <div id="summary-table-topic-${topicindex}>`
 
-		html=html+'	</div>';
-		html=html+'	</div>';
-		html=html+'</div>';
+		topic_top_docs.forEach((docIdWTopic) => {
+			let tmp = docIdWTopic.split('-');
+			let topicindex = tmp.splice(0, 1);
+			let docid_wo_topicid = '';
+
+			tmp.forEach(i => docid_wo_topicid += i + '-');
+
+			let id = docid_wo_topicid.substring(0 , docid_wo_topicid.length - 1);
+			let summary = mainWindow.docToSummaryMap[id];
+			html += createDocItemTemplate(id, url, docIdWTopic, topicindex);
+		});
+		html += `
+                    </div>
+                </div>
+		        </div>
+		    </div>`;
+
 		$(html).appendTo("#mainform_items");
 	}
 	//attach topic data to tr element
-	$("#topic-"+topicindex).data("topic",topic);
+	$(`#topic-${topicindex}`).data('topic', topic);
 }
 function followScroll(){
 	for(var i = 0; i < topicsnum; i++){
@@ -219,31 +219,35 @@ function render_input(json, study_condition)
 		document.getElementById("progress-header-div").style.visibility = "hidden";
 	}
 }
-function displayBaselineDocs(){
+function displayBaselineDocs() {
+	const url = `${backend}/DisplayData`;
+	let baselineDocsStr = "";
+	let htmlStr = '';
 
-	url = backend + "/DisplayData";
-	var baselineDocsStr = "";
-	var htmlStr = "";
-	htmlStr += "<table id=\"summary-table\" >";
-	for(var i in shuffledInitialBaselineDocs){
-		var docid_wo_topicid = shuffledInitialBaselineDocs[i];
+	for (let i in shuffledInitialBaselineDocs) {
+		let docid_wo_topicid = shuffledInitialBaselineDocs[i];
+		let docIdWTopic = mainWindow.getDocIdWithTopic(docid_wo_topicid);
+
 		allBaselineDocs.push(docid_wo_topicid);
-		baselineDocsStr += docid_wo_topicid+",";
-		var docIdWTopic = mainWindow.getDocIdWithTopic(docid_wo_topicid);
-		htmlStr += "<tr><td style=\"white-space:nowrap; overflow: hidden; max-width: 0; text-overflow: ellipsis;\"><span> <a href='#' id=" + docIdWTopic+" onclick=\"load_doc('" +url + "','" + docIdWTopic + "','" + "0" + "','1', null, false);return false;\">" + mainWindow.docToSummaryMap[docid_wo_topicid] +"</a><font>&nbsp;</font></span></td></tr>";
-		numDisplayDocs = "1";
-	}	
-	htmlStr += "</table>";
-	$(htmlStr).appendTo("#mainform_items")
+		baselineDocsStr += `${docid_wo_topicid},`;
+		htmlStr += mainWindow.createDocItemTemplate(docid_wo_topicid, url, docIdWTopic, 0);
+	}
+	$(`
+		<div id="summary-table">
+			${htmlStr}
+		</div>
+	`).appendTo("#mainform_items")
 }
 
-function load_input(username, study_condition)
-{
+function load_input(username, study_condition) {
 	var endpoint=backend+"/DataLoader?username="+username;
 	//loading different conditions
 	itm_done = false;
-	if(study_condition === LA_CONDITION || study_condition === LR_CONDITION)//baseline
-		document.getElementById('title').style.visibility = 'hidden';
+
+	// baseline
+	if(study_condition === LA_CONDITION || study_condition === LR_CONDITION) {
+		$('#themes-title').remove();
+	}
 	// SHOW overlay
 	$('#loading').modal({
 		keyboard: false
@@ -264,17 +268,19 @@ function load_input(username, study_condition)
 				window.alert("error");
 				return;
 			}
-			topicsnum = json.topicsnum;
-			corpusname = json.corpusname;
-			render_input(json, study_condition);
-			fillDocToIndexMap();
-			$('#loading').modal('hide');
-			startSeconds = new Date().getTime() / 1000;
-			addStartLogs(startSeconds, study_condition);
-			count_down();
-			if(mainWindow.global_study_condition == TA_CONDITION || mainWindow.global_study_condition == TR_CONDITION){
-				followScroll();
-			}
+			setTimeout(() => {
+                topicsnum = json.topicsnum;
+                corpusname = json.corpusname;
+                render_input(json, study_condition);
+                fillDocToIndexMap();
+                $('#loading').modal('hide');
+                startSeconds = new Date().getTime() / 1000;
+                addStartLogs(startSeconds, study_condition);
+                count_down();
+                if(mainWindow.global_study_condition == TA_CONDITION || mainWindow.global_study_condition == TR_CONDITION){
+                    followScroll();
+                }
+            }, 1000);
 		}
 	});
 }
@@ -310,8 +316,9 @@ function load_prev_label_docs(url, labelName, firstSeenIndex, numDocsPerPage){
 
 function load_label_docs(url, newWindow, labelName, startIndex, numDocsPerPage, isRefreshed){
 	mainWindow.loadedLabelName = labelName;
-	clickLabelTime = new Date().getTime() / 1000;
-	if(newWindow == "null"){
+	clickLabelTime = Date.now() / 1000;
+
+	if (newWindow == null) {
 		mainWindow.takeLogsInServer();
 		isLabelView = true;
 		for(var i=0; i<Object.keys(mainWindow.localAllLabelDocMap).length; i++){
@@ -325,7 +332,7 @@ function load_label_docs(url, newWindow, labelName, startIndex, numDocsPerPage, 
 			}
 		}
 	}
-	if(newWindow != "null"){//in data page
+	if (newWindow != null) { //in data page
 		mainWindow.takeLogsInServer();
 		mainWindow.isLabelView = true;
 		docToTopicMap = mainWindow.docToTopicMap;
@@ -339,9 +346,9 @@ function load_label_docs(url, newWindow, labelName, startIndex, numDocsPerPage, 
 		corpusname = mainWindow.corpusname;
 	}
 
-	if(labelName in mainWindow.allLabelDocMap == false || mainWindow.allLabelDocMap[labelName].length == 0){
+	if (labelName in mainWindow.allLabelDocMap == false || mainWindow.allLabelDocMap[labelName].length == 0) {
 		var appearTime = new Date().getTime() / 1000;
-		window.alert("No documents to show!"); 
+		window.alert("No documents to show!");
 		var okTime = new Date().getTime() / 1000;
 		var str = "No documents to show!"+labelName;
 		var currMin = mainWindow.minute;
@@ -349,7 +356,7 @@ function load_label_docs(url, newWindow, labelName, startIndex, numDocsPerPage, 
 		mainWindow.addAlertLogs(str, appearTime, okTime, currMin, currSec);
 		return;
 	}
-	if (Object.keys(docIdToIndexMap).length == 0){
+	if (Object.keys(docIdToIndexMap).length == 0) {
 		fillDocToIndexMap();
 	}
 	AL = false;
@@ -437,10 +444,10 @@ function load_label_docs(url, newWindow, labelName, startIndex, numDocsPerPage, 
 			", width=" + width +
 			", top=" + 20 +
 			", left=" + left);
-	
+
 	newWindow.focus();
 	mainWindow.popUpWindow = newWindow;
-	$(newWindow).on("beforeunload", function(){ 
+	$(newWindow).on("beforeunload", function(){
 		var closeTime = new Date().getTime() / 1000;
 		var currMin = mainWindow.minute;
 		var currSec = mainWindow.second;
@@ -457,7 +464,7 @@ function load_doc(url, docid, topicid, numDisplayDocs, newWindow) {
 	//mainWindow.isSuggestDocs = isSuggestDocs;
 	mainWindow.isLabelView = false;
 	//savedSuggestDocs = false;
-	mainWindow.requestTime = new Date().getTime() / 1000; 
+	mainWindow.requestTime = new Date().getTime() / 1000;
 	if (Object.keys(docIdToIndexMap).length == 0){
 		fillDocToIndexMap();
 	}
@@ -605,27 +612,19 @@ function canRunClassifier(localDocLabelMap){
 //added by yuening
 function count_down(){
 
-	if(second == 0) {
+	if (second == 0) {
 		second = 60;
 		minute = minute - 1;
 	}
 
 	second = second - 1;
 
-	if(minute >= 0) {
-		var dmin = "" + minute;
-		if(minute < 10) {
-			dmin = "0" + minute;
-		}
-		var dsec = "" + second;
-		if(second < 10) {
-			dsec = "0" + second;
-		}
-		$("#timing").val("Time left: " + dmin + ":" + dsec);
-		setTimeout("count_down()",1000);
+	if (minute >= 0) {
+		$('#timing').text(`Time left: ${minute}:${second}`);
+		setTimeout('count_down()', 1000);
 	}
 
-	if ( minute == 5 && second == 0) {
+	if (minute == 5 && second == 0) {
 		var appearTime = new Date().getTime() / 1000;
 		alert(minute + " minutes left for labeling!");
 		var okTime = new Date().getTime() / 1000;
@@ -651,7 +650,7 @@ function finishLabeling(){
 	var currMin = mainWindow.minute;
 	var currSec = mainWindow.second;
 	mainWindow.logStr += "alert Thanks for participating="+clickTime+",min="+currMin+",sec="+currSec+"%0A";
-	
+
 	takeFinalLogs();
 	finalClassify();
 	alert("Thanks for participating.");
@@ -677,17 +676,16 @@ function shuffle(array) {
 //----------------------------------------------------------------------------------------
 //logging functions
 function addCloseNormalDocLogs(){
-	var closeTime = new Date().getTime()/1000;
+	var closeTime = Date.now() / 1000;
 	var currMin = mainWindow.minute;
 	var currSec = mainWindow.second;
 	mainWindow.addCloseNormalDocLogs(closeTime, currMin, currSec);
 	window.close();
 }
 function closeWindowLabelView(labelName){//for label view
-	var closeTime = new Date().getTime()/1000;
+	var closeTime = Date.now () / 1000;
 	var currMin = mainWindow.minute;
 	var currSec = mainWindow.second;
 	mainWindow.addCloseLabelViewLogs(closeTime, labelName, currMin, currSec);
 	window.close();
 }
-

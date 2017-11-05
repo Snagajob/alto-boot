@@ -1,10 +1,22 @@
 <html xmlns:th="http://www.thymeleaf.org">
   <head>
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script type="text/javascript" charset="utf-8" src="static/js/Label.js"></script>
     <script type="text/javascript" charset="utf-8" src="static/js/main.js"></script>
     <script type="text/javascript" charset="utf-8" src="data/data.js"></script>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous" />
     <link rel="stylesheet" href="data/data.css" />
+
+    <style>
+      html, body {
+        background-color: #eee;
+      }
+      #container {
+          position: relative;
+          top: 56px;
+      }
+    </style>
 
     <script th:inline="javascript">
     /*<![CDATA[*/
@@ -21,28 +33,55 @@
   </head>
 
 <body onload="setTimeout(onDetailLoad, 100); mainWindow = window.opener.mainWindow;">
-<table width="100%">
-  <tr>
-    <td>
-      <div th:id="${'top-part-' + document.id}"></div>
-    </td>
-  </tr>
-  <tr>
-    <td width="100%">
-      <form name="mainForm">
-        <div style="display:none" id="main" class="main">
-            <div class ="segment" style="height:300px; overflow:scroll;" th:id="${document.id}">
-              <span th:utext="${document.text}"></span>
-            </div>
+  <nav class="navbar navbar-dark bg-dark fixed-top">
+    <span class="navbar-brand mb-0 h1">Interactive Document Labeling</span>
+    <span class="navbar-text">Document Detail</span>
+  </nav>
+  <div id="container" class="container">
+    <form id="mainForm" name="mainForm">
+      <div style="display:none" id="main" class="main">
+        <div th:id="${document.id}" class="card mt-3 p-3">
+          <div class="card-body">
+            <h6 th:id="${'subtitle-' + document.id}" class="card-subtitle">
+              <span class="badge badge-pill label"></span>
+            </h6>
+            <p class="card-text mt-2" th:utext="${document.text}"></p>
+          </div>
+          <div class="card-body">
+          	<form>
+              <div class="form-row justify-content-between">
+                <div th:id="${'label-container-' + document.id}" class="form-group">
+                  <!--
+                  <select class="custom-select">
+                  		<option selected="">Select Label</option>
+                  		<option value="1">One</option>
+                  		<option value="2">Two</option>
+                  		<option value="3">Three</option>
+                	</select>
+                  -->
+                </div>
+                <div th:id="${'new-label-container-' + document.id}" class="form-group">
+                  <!--
+                  <input type="text" class="form-control" placeholder="New Label" />
+                  -->
+          	    </div>
+                <div th:id="${'label-and-close-' + document.id}" class="form-group">
+                  <!--
+                  <button class="btn btn-primary">Apply Label</button>
+                  -->
+                </div>
+              </div>
+            </form>
+          </div>
         </div>
-      </form>
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <div th:id="${'low-part-' + document.id}"></div>
-    </td>
-  </tr>
-</table>
+
+        <div th:id="${'close-' + document.id}" class="d-flex mt-3 justify-content-center">
+          <!--
+          <button id="closeButton" class="btn btn-link">Close</button>
+          -->
+        </div>
+      </div>
+    </form>
+  </div>
 </body>
 </html>

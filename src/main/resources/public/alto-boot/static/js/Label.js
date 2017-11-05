@@ -50,6 +50,21 @@ function fillDocToIndexMap(){
 		cnt++;
 	}
 }
+
+/**
+  * Disable the Add Label button if the label is only white-space or empty
+  * Enable the Add Lable button if there is content
+  */
+function disableEnableAddLabel(){
+	$('#label-form').keyup((e) => {
+		if (e.target.value.trim() == '') {
+			$('#label-submit-button').prop('disabled', true)
+		} else {
+      $('#label-submit-button').prop('disabled', false)
+		}
+	});
+}
+
 //----------------------------------------------------------------------------------------
 //Adding a new label
 function addLabel(){
@@ -78,52 +93,68 @@ function addLabel(){
 	document.getElementById("label-submit-button").disabled = true;
 	document.getElementById("label-form").value = "";
 }
-function addLabelName(labelName){
-	labelName = String(labelName);
+
+function validateLabelName(labelName) {
+  const appearTime = new Date().getTime() / 1000;
+  const currMin = mainWindow.minute;
+  const currSec = mainWindow.second;
+
+  if (labelName.trim() in labelSet || labelName.trim().toLowerCase() in labelSet) {
+    const str = `Label (${labelName.trim().toLowerCase()}) already exists.`;
+
+    window.alert(str);
+    mainWindow.addAlertLogs(str, appearTime, appearTime, currMin, currSec);
+    throw new Error();
+  } else if (labelName == '') {
+    const str = "A label should have et least one character. Please enter a valid label!";
+
+    window.alert(str);
+    mainWindow.addAlertLogs(str, appearTime, appearTime, currMin, currSec);
+    throw new Error();
+  }
+}
+function addLabelName(labelName) {
+  try {
+    validateLabelName(labelName);
+  } catch(e) {
+    return;
+  }
+
+  labelSet[labelName] = true;
+  const labels = Object.keys(labelSet);
+
 	allLabelDocMap[labelName] = [];
 	localAllLabelDocMap[labelName] = [];
-	var numLabels = Object.keys(labelSet).length;
-	rand = Math.floor(Math.random() * colors.length);
-	labelToColor[labelName] = colors[numLabels];
-	colors.splice(numLabels,1);
-	if (labelName.trim() in labelSet || labelName.trim().toLowerCase() in labelSet){
-		var appearTime = new Date().getTime() / 1000;
-		window.alert("Label ("+labelName.trim().toLowerCase()+") already exists.");
-		var okTime = new Date().getTime() / 1000;
-		var currMin = mainWindow.minute;
-		var currSec = mainWindow.second;
-		var str = "Label ("+labelName.trim().toLowerCase()+") already exists.";
-		mainWindow.addAlertLogs(str, appearTime, okTime, currMin, currSec);
-		return;
-	}
-	if (labelName == ""){
-		var appearTime = new Date().getTime() / 1000;
-		window.alert("A label should have et least one character. Please enter a valid label!");
-		var okTime = new Date().getTime() / 1000;
-		var currMin = mainWindow.minute;
-		var currSec = mainWindow.second;
-		var str = "A label should have et least one character. Please enter a valid label!";
-		mainWindow.addAlertLogs(str, appearTime, okTime, currMin, currSec);
-		return;
-	}
-	labelSet[labelName] = true;
-	url = backend+"/DisplayData?topic=Labels";
-	radioStr = "<div " +
-	"\" id = \""+ "label-div-"+labelName+"\"></a>"+"<input type=\"radio\" checked name = \"label-name\" value=\""+
-	labelName +"\" onchange ='enableEditDel()'>&nbsp;&nbsp;&nbsp;<a href='#' onclick = \"load_label_docs('"+url+"','"+null+"','"+labelName+"','"+0+"','"+numDocsPerPage+"',false)\"><font  color='"+labelToColor[labelName]+"'><b>"+
-	labelName+"</b></font></a><br></div>";	
-	radioStr = "";
-	if(Object.keys(labelSet).length > 0){
-		sortedLabelSet = Object.keys(labelSet).sort();
-		for(j in sortedLabelSet){
-			radioStr += "<div " +
-			"\" id = \""+ "label-div-"+sortedLabelSet[j]+"\"></a>"+"<input type=\"radio\" checked name = \"label-name\" value=\""+
-			sortedLabelSet[j] +"\" onchange ='enableEditDel()'>&nbsp;&nbsp;&nbsp;<a href='#' onclick = \"load_label_docs('"+url+"','"+null+"','"+sortedLabelSet[j]+"','"+0+"','"+numDocsPerPage+"',false)\"><font  color='"+labelToColor[sortedLabelSet[j]]+"'><b>"+
-			sortedLabelSet[j]+"</b></font></a><br></div>";
-		}
-	}
-	document.getElementById("label-display").innerHTML = radioStr;
+  labelToColor[labelName] = colors[labels.length];
+  colors.splice(labels.length, 1);
+
+  insertLabels(labelSet);
 	enableEditDel();
+}
+
+function insertLabels(labelSet) {
+  const url = `${backend}/DisplayData`;
+  const labels = Object.keys(labelSet);
+  let radioStr = '';
+
+  if (labels.length > 0) {
+    sortedLabelSet = labels.sort();
+    sortedLabelSet.forEach(label => radioStr += createLabelTemplate(label, url, numDocsPerPage, labelToColor[label]));
+  }
+
+  $('#label-display').html(radioStr);
+}
+
+function createLabelTemplate(label, url, numDocsPerPage, color) {
+  return `
+    <div id="label-div-${label}" class="form-check">
+      <label class="form-check-label">
+        <input class="form-check-input" type="radio" name="label-name" value="${label}" checked onchange="enableEditDel()">
+        <a href='#' onclick="load_label_docs('${url}', null, '${label}', 0, ${numDocsPerPage}, false)">
+          <b style="color: ${color};">${label}</b>
+        </a>
+      </label>
+    </div>`;
 }
 //----------------------------------------------------------------------------------------
 //edit and delete a label
@@ -136,7 +167,7 @@ function disableEditDel(){
 	$('#edit-label').attr('disabled', true);
 }
 function deleteLabel(){
-	//deletes the label from the ui 
+	//deletes the label from the ui
 	//any doc that has that label will no longer have any label
 	mainWindow.deleteALabel = true;
 	var clickTime = new Date().getTime() / 1000;
@@ -145,10 +176,10 @@ function deleteLabel(){
 	var currSec = mainWindow.second;
 	mainWindow.addDeleteLabelLogs(clickTime, labelName, currMin, currSec);
 
-	elem = document.getElementById('label-div-'+labelName); 
+	elem = document.getElementById('label-div-'+labelName);
 	elem.parentNode.removeChild(elem);
 	mainWindow.deletedLabel = labelName;
-	
+
 	//update labeledTopicDocs
 	if(mainWindow.global_study_condition === LA_CONDITION || mainWindow.global_study_condition === LR_CONDITION){
 		var i = 0;
@@ -184,7 +215,7 @@ function deleteLabel(){
 		mainWindow.setProgressBar();
 	}
 
-	$('#label-div-'+labelName).remove(); 
+	$('#label-div-'+labelName).remove();
 	//delete from labelSet
 	for(var label in labelSet) {
 		if(label === labelName) {
@@ -207,7 +238,7 @@ function deleteLabel(){
 			deleteAutoDocLabel(docId, window);
 		}
 	}
-	//update docLabelProbMap 
+	//update docLabelProbMap
 	for (docId in docLabelProbMap){
 		dist = docLabelProbMap[docId];
 		delete dist[labelName];
@@ -223,7 +254,7 @@ function deleteLabel(){
 		classifyForAL();
 }
 function editLabel(){
-	//edits the label in the ui 
+	//edits the label in the ui
 	//any doc that has that label will have the new label
 	var clickTime = new Date().getTime() / 1000;
 	labelName = $("input:radio[name=label-name]:checked").val();
@@ -295,16 +326,12 @@ function editLabel(){
 	labelToColor[newLabelName] = labelToColor[labelName];
 	var elem = document.getElementById("label-div-"+labelName);
 
-	radioStr  = "<div " +
-	"\" id = \""+ "label-div-"+newLabelName+"\"></a>"+"<input type=\"radio\" checked name = \"label-name\" value=\""+
-	newLabelName +"\" onchange ='enableEditDel()'>&nbsp;&nbsp;&nbsp;<a href='#' onclick = \"load_label_docs('"+url+"','"+null+"','"+newLabelName+"','"+0+"','"+numDocsPerPage+"')\"><font  color='"+labelToColor[newLabelName]+"'><b>"+
-	newLabelName+"</b></font></a><br></div>";	
-
-	$( elem ).replaceWith(radioStr);
+  radioStr = createLabelTemplate(newLabelName, url, numDocsPerPage, labelToColor[newLabelName]);
+	$(elem).replaceWith(radioStr);
 
 	delete labelToColor[labelName];
 
-	//editing from docLabelMap 
+	//editing from docLabelMap
 	for (docId in docLabelMap){
 		docLabel = docLabelMap[docId];
 		if(docLabel == labelName){
@@ -319,7 +346,7 @@ function editLabel(){
 		}
 	}
 
-	//update docLabelProbMap 
+	//update docLabelProbMap
 	for (docId in docLabelProbMap){
 		dist = docLabelProbMap[docId];
 		dist[newLabelName] = dist[labelName];
@@ -335,11 +362,12 @@ function editLabel(){
 //Document info
 function fillDocTopics(){
 	//makes a string of docIds to the topics it has
-	if(Object.keys(mainWindow.docToTopicMap).length == 0){
+	if (Object.keys(mainWindow.docToTopicMap).length == 0) {
 		for(var d in all_docs){
-			var docId = all_docs[d]["name"];
-			var highTopics = all_docs[d]["highestTopic"];
-			docToTopicMap[docId] = highTopics;
+			let docId = all_docs[d]['name'];
+			let highTopics = all_docs[d]['highestTopic'];
+
+      docToTopicMap[docId] = highTopics;
 		}
 	}
 }
@@ -487,10 +515,10 @@ function classify(){
 			mainWindow.isFirstTime = false;
 			if(mainWindow.isLabelView){
 				//restart the label
-				if(mainWindow.loadedLabelName in mainWindow.allLabelDocMap == true 
-						&& mainWindow.allLabelDocMap[mainWindow.loadedLabelName].length != 0){	
-			
-						var url = mainWindow.backend+"/DisplayData?topic=Labels";				
+				if(mainWindow.loadedLabelName in mainWindow.allLabelDocMap == true
+						&& mainWindow.allLabelDocMap[mainWindow.loadedLabelName].length != 0){
+
+						var url = mainWindow.backend+"/DisplayData?topic=Labels";
 						mainWindow.load_label_docs(url, "null", mainWindow.loadedLabelName, '0', mainWindow.numDocsPerPage, true);
 				}
 			}
@@ -663,73 +691,71 @@ function suggestDocs(isAuto, newLabel){
 //UI docs and their colors
 function updateUIDocs(json){
 	mainWindow.fillDocTopics();
-	if(mainWindow.global_study_condition == TA_CONDITION || mainWindow.global_study_condition == TR_CONDITION){
-		for (var i = 0 ; i < topicsnum; i++){
-			var topicIndex = i;
-			//add already labeled docs
-			var labeled = mainWindow.labeledTopicsDocs[topicIndex];
-			mainWindow.topicToAllDisplayedDocs[""+topicIndex] = [];
-			mainWindow.document.getElementById("topic-docs-"+topicIndex).innerHTML = "";
-			var innerHTMLStr = "";
-			innerHTMLStr += "<table id=\"summary-table-topic-"+topicIndex+"\">";
 
-			for(var j in labeled){
-				var labeledDocId = labeled[j];
-				innerHTMLStr += mainWindow.addDocToList(labeledDocId, topicIndex);
-			}
+  if (mainWindow.global_study_condition == TA_CONDITION || mainWindow.global_study_condition == TR_CONDITION) {
+		for (let topicIndex = 0 ; topicIndex < +topicsnum; topicIndex++) {
+			// add already labeled docs
+			let labeled = mainWindow.labeledTopicsDocs[topicIndex];
+      let innerHTMLStr = ``;
+
+      mainWindow.topicToAllDisplayedDocs[`${topicIndex}`] = [];
+
+      for(let j in labeled) {
+        let labeledDocId = labeled[j];
+
+        innerHTMLStr += mainWindow.addDocToList(labeledDocId, topicIndex);
+      }
+
 			//add AL docs and top topic docs sorted on uncertainty
-			for (var j in mainWindow.topicToALTopIds[""+topicIndex]){
-				var docId = mainWindow.topicToALTopIds[""+topicIndex][j];				
-				innerHTMLStr += mainWindow.addDocToList(docId, topicIndex);
-			}
-			mainWindow.document.getElementById("topic-docs-"+topicIndex).innerHTML += "</table>";
-			mainWindow.document.getElementById("topic-docs-"+i).innerHTML = innerHTMLStr;
-			//updates color in UI
-			for(var j in labeled){
-				var labeledDocId = labeled[j];
-				mainWindow.updateColor(labeledDocId);
-			}
-			for (var j in mainWindow.topicToALTopIds[""+topicIndex]){
-				var docId = mainWindow.topicToALTopIds[""+topicIndex][j];
-				mainWindow.updateColor(docId);
-			}
-		}
-		var highestTopic = json.highestTopic;
+      for (let j in mainWindow.topicToALTopIds[`${topicIndex}`]) {
+        let docId = mainWindow.topicToALTopIds[`${topicIndex}`][j];
+
+        innerHTMLStr += mainWindow.addDocToList(docId, topicIndex);
+      }
+
+			mainWindow.document.getElementById(`topic-docs-${topicIndex}`).innerHTML = `
+        <div id="summary-table-topic-${topicIndex}">
+          ${innerHTMLStr}
+        </div>`;
+
+      //updates color in UI
+      for(let j in labeled) {
+        let labeledDocId = labeled[j];
+        mainWindow.updateColor(labeledDocId);
+      }
+
+      for (let j in mainWindow.topicToALTopIds[`${topicIndex}`]) {
+        let docId = mainWindow.topicToALTopIds[`${topicIndex}`][j];
+
+        mainWindow.updateColor(docId);
+      }
+    }
+		let highestTopic = json.highestTopic;
 		mainWindow.optTopic = highestTopic;
-		
+
 		//draw red box around highest doc
-		mainWindow.optDocId = mainWindow.topicToALTopIds[""+highestTopic][0];
+		mainWindow.optDocId = mainWindow.topicToALTopIds[`${highestTopic}`][0];
 		mainWindow.addOptDocBorder(mainWindow.optDocId);
-	}
-	else{
+	} else {
 		mainWindow.allBaselineDocs = [];
-		mainWindow.document.getElementById("mainform_items").innerHTML = "";
-		var innerHTMLStr = "<table id=\"summary-table\">";
-		//window.alert(Object.keys(mainWindow.baselineLabeledDocs).length);
+		let innerHTMLStr = ``;
+
 		//add labeled docs
-		if(mainWindow.docLabelMap != null && Object.keys(mainWindow.docLabelMap).length != 0){
-		
-			for(var i in mainWindow.baselineLabeledDocs){
-				var docId = mainWindow.baselineLabeledDocs[i];
-				innerHTMLStr += mainWindow.addBaselineDocToList(docId);
-			}
+		if (mainWindow.docLabelMap != null && Object.keys(mainWindow.docLabelMap).length != 0) {
+      Object.keys(mainWindow.baselineLabeledDocs).forEach(docId => innerHTMLStr += mainWindow.addBaselineDocToList(docId));
 		}
 		//add AL docs to the list sorted based on uncertainty
-		for (var j in mainWindow.baselineALDocs){
-			var docId = mainWindow.baselineALDocs[j];				
-			innerHTMLStr += mainWindow.addBaselineDocToList(docId);
-		}
-		innerHTMLStr += "</table>";
-		mainWindow.document.getElementById("mainform_items").innerHTML = innerHTMLStr;
+    Object.keys(mainWindow.baselineALDocs).forEach(docId => innerHTMLStr += mainWindow.addBaselineDocToList(docId));
+
+		mainWindow.document.getElementById("mainform_items").innerHTML = `
+      <div id="summary-table">
+        ${innerHTMLStr}
+      </div>`;
+
 		//update colors in UI
-		for (var j in mainWindow.baselineLabeledDocs){
-			var docId = mainWindow.baselineLabeledDocs[j];				
-			mainWindow.updateColor(docId);
-		}
-		for (var j in mainWindow.baselineALDocs){
-			var docId = mainWindow.baselineALDocs[j];	
-			mainWindow.updateColor(docId);
-		}
+    Object.keys(mainWindow.baselineLabeledDocs).forEach(docId => mainWindow.updateColor(docId));
+    Object.keys(mainWindow.baselineALDocs).forEach(docId => mainWindow.updateColor(docId));
+
 		//draw red box around highest doc
 		mainWindow.optDocId = mainWindow.baselineALDocs[0];
 		mainWindow.addOptDocBorder(mainWindow.optDocId);
@@ -751,7 +777,7 @@ function updateYellowHighlight(){
 function updateAutoDocColors(){
 	for(docId in docIdToIndexMap){
 		docIdWTopic = mainWindow.getDocIdWithTopic(docId);
-		if(mainWindow.checkExists(docId)){				
+		if(mainWindow.checkExists(docId)){
 			document.getElementById(docIdWTopic).style.backgroundColor = '';
 			if(docId in classificationDocLabelMap == false && docId in docLabelMap == false){//if not in classification and not in docLabelMap
 				document.getElementById(docIdWTopic).style.color = '#B0B0B0';
@@ -813,56 +839,49 @@ function deleteAutoDocLabel(docId, currWindow, isLabelDocs){
 		delete currWindow.maxPosteriorLabelProbMap[docId];
 	}
 }
-jQuery.fn.scrollTo = function(elem) { 
+jQuery.fn.scrollTo = function(elem) {
 	//scrolls to a sub div in an scrollable div
-	$(this).scrollTop($(this).scrollTop() - $(this).offset().top + $(elem).offset().top - 10); 
-	return this; 
+	$(this).scrollTop($(this).scrollTop() - $(this).offset().top + $(elem).offset().top - 10);
+	return this;
 };
 function addOptDocBorder(){
-	var highestTopic = mainWindow.docToTopicMap[mainWindow.optDocId];
-	var divId = "topic"+highestTopic+"-"+mainWindow.optDocId;
-	//herehere
-	if (mainWindow.global_study_condition == TA_CONDITION || mainWindow.global_study_condition == TR_CONDITION){
-		//scroll to the specified div in highest topic div
-		$('html, body').animate({
-			scrollTop: $("#"+divId).offset().top-100
-		}, 200);
-		//$("#topic-docs-"+highestTopic).scrollTo("#"+divId);
-		var table = mainWindow.document.getElementById("summary-table-topic-"+highestTopic);  
-		//window.alert(table+":"+"summary-table-topic-"+highestTopic);
-		var row = table.rows.namedItem("row_"+mainWindow.optDocId); 
+	const highestTopic = mainWindow.docToTopicMap[mainWindow.optDocId];
+	const divId = `topic${highestTopic}-${mainWindow.optDocId}`;
+	let table;
+
+	//scroll to the specified div in highest topic div
+  $('html, body').animate({
+    scrollTop: $(`#${divId}`).offset().top - 100
+  }, 200);
+
+	if (mainWindow.global_study_condition == TA_CONDITION || mainWindow.global_study_condition == TR_CONDITION) {
+		table = mainWindow.document.getElementById(`summary-table-topic-${highestTopic}`);
+	} else {//puts a red border around opt doc column
+		let table = mainWindow.document.getElementById("summary-table");
 	}
-	else{//puts a red border around opt doc column
-		$('html, body').animate({
-			scrollTop: $("#"+divId).offset().top-100
-		}, 200);
-		var table = mainWindow.document.getElementById("summary-table");   
-		var row = table.rows.namedItem("row_"+mainWindow.optDocId); 
-	}
-	row.style.border = "4px solid #FF0000"; 
+
+  let row = $(table).children(`#row_${mainWindow.optDocId}`)[0];
+
+	row.style.border = "4px solid #FF0000";
 
 }
 function addBaselineDocToList(docId){
 	//adds a doc to the ui in baseline
-	var innerHTMLStr = "";
-	var url = backend+"/DisplayData";
-	var docIdWTopic = mainWindow.getDocIdWithTopic(docId);
-	innerHTMLStr += "<tr id=\"row_"+docId+"\"><td style=\"white-space:nowrap; overflow: hidden; max-width: 0; text-overflow: ellipsis;\"><span> <a href='#' id=" + docIdWTopic+" onclick=\"load_doc('" +url + "','" + docIdWTopic + "','" + "0" + "','1', null, false);return false;\">" + mainWindow.docToSummaryMap[docId] +"</a><font>&nbsp;</font></span></td></tr>";
-	mainWindow.allBaselineDocs.push(docId);
-	return innerHTMLStr;
+	const url = `${backend}/DisplayData`;
+	const docIdWTopic = mainWindow.getDocIdWithTopic(docId);
 
+  mainWindow.allBaselineDocs.push(docId);
+  return createDocItemTemplate(docId, url, docIdWTopic, 0);
 }
 function addDocToList(docId, topicIndex){
 	//adds a doc to the list based on its topic
-	var url = backend+"/DisplayData";
-	var docIdWTopic = mainWindow.getDocIdWithTopic(docId);
+	const url = `${backend}/DisplayData`;
+	const docIdWTopic = mainWindow.getDocIdWithTopic(docId);
 
-	mainWindow.topicToAllDisplayedDocs[""+topicIndex].push(docId);
-	var innerHTMLStr = "";		
-	var summary = mainWindow.docToSummaryMap[docId];
+	mainWindow.topicToAllDisplayedDocs[`${topicIndex}`].push(docId);
+	const summary = mainWindow.docToSummaryMap[docId];
 
-	innerHTMLStr += "<tr id=\"row_"+docId+"\"><td style=\"white-space:nowrap; overflow: hidden; max-width: 0; text-overflow: ellipsis;\"><span> <a href='#' id=" + docIdWTopic+" onclick=\"load_doc('" +url + "','" + docIdWTopic + "','" + topicIndex + "','1', null, false);return false;\">" + mainWindow.docToSummaryMap[docId] +"</a><font>&nbsp;</font></span></td></tr>";
-	return innerHTMLStr;
+  return mainWindow.createDocItemTemplate(docId, url, docIdWTopic, topicIndex);
 }
 function updateColor(docId){
 	//updates the color and background color based on if they are labeled by user/classifier/undefined
@@ -977,17 +996,19 @@ function checkExists(docId){
 
 }
 
-function setProgressBar(){
+function setProgressBar() {
 	//sets the progress bar based on labeledTopicsDocs
-	var cnt = 0;
-	for(var i = 0 ; i < mainWindow.topicsnum; i++){
-		var labeled = mainWindow.labeledTopicsDocs[i];
-		var numLabeledInTopic = Object.keys(labeled).length;
+	let cnt = 0;
+
+	for (let i = 0 ; i < mainWindow.topicsnum; i++) {
+		let labeled = mainWindow.labeledTopicsDocs[i];
+		let numLabeledInTopic = Object.keys(labeled).length;
 		if (numLabeledInTopic != 0)
 			cnt++;
 	}
-	var width = (cnt/mainWindow.topicsnum)*100;
-	var percentage = Math.round(width * 100) / 100;
-	$("#progree-inner-div").html(percentage+"%");
-	$("#progree-inner-div").attr("style","width:"+ width+"%");
+	let width = (cnt/mainWindow.topicsnum) * 100;
+	let percentage = Math.round(width * 100) / 100;
+
+	$('#progress-inner-div').html(`${percentage}%`);
+	$('#progress-inner-div').attr('style', `width:${width}%`);
 }
