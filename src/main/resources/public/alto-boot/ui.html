@@ -103,12 +103,12 @@
 		<div class="container d-flex flex-column">
 			<div class="row">
 				<div class="col col-4">
-						<div id="main-table" class="o-y-auto" style="position: fixed; height: 500px">
+						<div id="main-table" class="o-y-auto" style="height: 500px">
               <!-- Display all created labels --->
-							<div id="label-display"></div>
+							<div id="label-display" class="mb-4"></div>
 
               <!-- Add New Label -->
-              <form class="form-inline" onsubmit="document.getElementById('label-form').value = ''; return false;">
+              <form class="form-inline mb-4" onsubmit="document.getElementById('label-form').value = ''; return false;">
                 <div class="form-group mx-sm-3">
                   <div class="input-group">
                     <input class="form-control" id="label-form"  placeholder="New label" name="label-form" size="20" type="text" onkeypress="disableEnableAddLabel()" />
@@ -120,8 +120,8 @@
               </form>
 
               <!-- Edit/Delete Label -->
-							<button id="edit-label" disabled class="btn btn-info" onclick="editLabel()" title="renames the label for all documents that are labeled with selected label.">Rename Label</button>
-							<button id="delete-label" disabled class="btn btn-danger" onclick="deleteLabel()" title="deletes the label for all documents that are labeled with selected label.">Delete Label</button>
+							<button id="edit-label" disabled class="btn btn-info mb-4" onclick="editLabel()" title="renames the label for all documents that are labeled with selected label.">Rename Label</button>
+							<button id="delete-label" disabled class="btn btn-danger mb-4" onclick="deleteLabel()" title="deletes the label for all documents that are labeled with selected label.">Delete Label</button>
 
               <!-- Theme Progress -->
 							<div id="progress-header-div"><b>Covered Themes Progress:</b></div>

@@ -188,11 +188,6 @@ a:link {
 	margin-bottom: 20px;
 }
 
-#main-table input, #main-table .btn {
-    display: block;
-		margin-bottom: 20px;
-}
-
 #main-table .form-group {
 	margin-left: 0!important;
 }
