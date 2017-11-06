@@ -20,21 +20,36 @@ function disableLabelMenue() {
 		}
 	});
 }
-function disableSelectLabel(docId){
-	document.getElementById('apply_label_'+docId).disabled = false;
-	document.getElementsByName('label_'+docId)[0].disabled = true;
-	if(docId in mainWindow.classificationDocLabelMap)
-		document.getElementById("approve_"+docId).disabled = true;
-}
-function enableSelectLabel(docId){
-	$('#label-form-'+docId).keyup(function(e){
-		if((e.keyCode == 8 || e.keyCode == 46) && this.value.length == 0){
-			document.getElementById('apply_label_'+docId).disabled = true;
-			document.getElementsByName('label_'+docId)[0].disabled = false;
-			if(docId in mainWindow.classificationDocLabelMap)
-				document.getElementById("approve_"+docId).disabled = false;
+function setupLabelHandlers(docId) {
+	const $select = $(`#label_${docId}`);
+	const $input = $(`#label-form-${docId}`);
+	const $applyLabel = $(`#apply_label_${docId}`);
+
+	$input.keyup((e) => {
+		if (e.target.value.length) {
+			$select.val('');
+			$select.prop('disabled', true);
+			$applyLabel.prop('disabled', false);
+		} else if (!e.target.value.length) {
+			$select.prop('disabled', false);
+			$applyLabel.prop('disabled', true);
 		}
 	});
+
+	$select.change((e) => {
+		if (e.target.value) {
+			$input.val('');
+			$input.prop('disabled', true);
+			$applyLabel.prop('disabled', false);
+		} else {
+			$input.prop('disabled', false);
+			$applyLabel.prop('disabled', true);
+		}
+	});
+}
+function disableSelectLabel(docId){
+	if(docId in mainWindow.classificationDocLabelMap)
+		document.getElementById("approve_"+docId).disabled = true;
 }
 
 function addLabel(docId){//add a new label in data
@@ -347,10 +362,7 @@ function generateLabelSelectTemplate(labelSetStr, id, numDisplayDocs, isLabelDoc
 		<select
 			class="custom-select"
 			id='label_${id}'
-			name='label_${id}'
-			onchange='addChangeLabelLogs("${id}");
-								resetLastLabelTime();
-								saveDocLabelMap(${numDisplayDocs}, ${isLabelDocs}, "${id}")'>
+			name='label_${id}'>
 			${optionStr}
 		</select>`;
 }
@@ -404,8 +416,6 @@ function addDocLabel(numDisplayDocs, isLabelDocs, labelName, labelSetStr) {
 					autofocus
 					class='form-control'
 					name='label-form-${node.id}'
-					oninput="disableSelectLabel('${node.id}')"
-					onkeypress="enableSelectLabel('${node.id}')"
 					size='20'
 					type='text'>`;
 			const applycloseLabelButton = `
@@ -438,6 +448,7 @@ function addDocLabel(numDisplayDocs, isLabelDocs, labelName, labelSetStr) {
 			} else {
 				$(`#label-and-close-${node.id}`).html(applycloseLabelButton);
 			}
+			setupLabelHandlers(node.id);
 		} else {
 			/* Related Documents */
 			$(`#delete-${node.id}`).click(() => {

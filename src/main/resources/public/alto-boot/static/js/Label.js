@@ -863,7 +863,7 @@ function addOptDocBorder(){
   let row = $(table).children(`#row_${mainWindow.optDocId}`)[0];
 
 	row.style.border = "4px solid #FF0000";
-
+  row.scrollIntoView();
 }
 function addBaselineDocToList(docId){
 	//adds a doc to the ui in baseline
