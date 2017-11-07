@@ -147,10 +147,10 @@ function insertLabels(labelSet) {
 
 function createLabelTemplate(label, url, numDocsPerPage, color) {
   return `
-    <div id="label-div-${label}" class="form-check">
+    <div id="label-div-${label}" class="form-check ellipsify">
       <label class="form-check-label">
         <input class="form-check-input" type="radio" name="label-name" value="${label}" checked onchange="enableEditDel()">
-        <a href='#' onclick="load_label_docs('${url}', null, '${label}', 0, ${numDocsPerPage}, false)">
+        <a title='${label}' href='#' onclick="load_label_docs('${url}', null, '${label}', 0, ${numDocsPerPage}, false)">
           <b style="color: ${color};">${label}</b>
         </a>
       </label>
