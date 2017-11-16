@@ -72,7 +72,7 @@ function createDocItemTemplate (docId, url, docIdWTopic, topicIndex) {
 }
 
 //Function adds row with topic content into table (including all data bindings to DOM elements)
-function add_topic(topic, study_condition) {
+function addTopic(topic, study_condition) {
 	topic_top_docs = [];
 	global_study_condition = study_condition;
 	if (Object.keys(docIdToIndexMap).length == 0)
@@ -144,7 +144,7 @@ function add_topic(topic, study_condition) {
 	if(study_condition == TA_CONDITION || study_condition == TR_CONDITION) {
 		let html=`
 		    <div id="topic-${topicindex}" class="document-container p-2">
-		        <div id=topicRow-${topicindex} class="row">
+		        <div id=topicRow-${topicindex} class="row align-items-start">
                 <div id="topic-${topicindex}-words" class="col col-3 words">${wrds}</div>
 		            <div id="topic-docs-${topicindex}" class="col col-9 documents">
 		                <div id="summary-table-topic-${topicindex}>`
@@ -171,20 +171,20 @@ function add_topic(topic, study_condition) {
 	//attach topic data to tr element
 	$(`#topic-${topicindex}`).data('topic', topic);
 }
-function followScroll(){
-	for(var i = 0; i < topicsnum; i++){
-		$("#topic-"+String(i)+"-words").fixTo("#topic-"+String(i),{ top:100});
+function followScroll() {
+	for(var i = 0; i < topicsnum; i++) {
+		$(`#topic-${i}-words`).fixTo(`#topic-${i}`, { top : 100 });
 	}
 }
 
 //edited by yuening
-function render_input(json, study_condition)
-{
+function renderDocuments(json, study_condition) {
 	//clear topics list
 	$("#mainform_items").empty();
 	//save vocabulary and documents to global variables
-	docs=json.documents;
+	docs = json.documents;
 	all_docs = json.all_documents;
+	topics = json.topics;
 
 	if(Object.keys(docToSummaryMap).length == 0){
 		fillDocToSummaryMap();
@@ -195,21 +195,9 @@ function render_input(json, study_condition)
 	if (Object.keys(docIdToIndexMap).length == 0){
 		fillDocToIndexMap();
 	}
-	//create shuffled doc index array
-	tmpArr = [];
-	for(i = 0; i < all_docs.length; i++){
-		tmpArr[i] = i;
-	}
-	var tbl="";
-	topics = json.topics;
-	//window.alert(JSON.stringify(json));
+
 	for (var t in topics) {
-		//window.alert(topics[t]);
-		add_topic(topics[t], study_condition);
-		if(study_condition == TA_CONDITION || study_condition == TR_CONDITION){
-			var topicindex = topics[t]["topicindex"];
-			document.getElementById("topic-docs-"+topicindex).style.float = 'right';
-		}
+		addTopic(topics[t], study_condition);
 	}
 
 	if(study_condition == LA_CONDITION || study_condition == LR_CONDITION){
@@ -239,8 +227,8 @@ function displayBaselineDocs() {
 	`).appendTo("#mainform_items")
 }
 
-function load_input(username, study_condition) {
-	var endpoint=backend+"/DataLoader?username="+username;
+function loadInput(username, study_condition) {
+	const endpoint = `${backend}/DataLoader?username=${username}`;
 	//loading different conditions
 	itm_done = false;
 
@@ -268,25 +256,25 @@ function load_input(username, study_condition) {
 				window.alert("error");
 				return;
 			}
+			setInterval(startTimer, 1000);
 			setTimeout(() => {
-                topicsnum = json.topicsnum;
-                corpusname = json.corpusname;
-                render_input(json, study_condition);
-                fillDocToIndexMap();
-                $('#loading').modal('hide');
-                startSeconds = new Date().getTime() / 1000;
-                addStartLogs(startSeconds, study_condition);
-                count_down();
-                if(mainWindow.global_study_condition == TA_CONDITION || mainWindow.global_study_condition == TR_CONDITION){
-                    followScroll();
-                }
-            }, 1000);
+        topicsnum = json.topicsnum;
+        corpusname = json.corpusname;
+        renderDocuments(json, study_condition);
+        fillDocToIndexMap();
+        $('#loading').modal('hide');
+        startSeconds = Date.now() / 1000;
+        addStartLogs(startSeconds, study_condition);
+        if(mainWindow.global_study_condition == TA_CONDITION || mainWindow.global_study_condition == TR_CONDITION){
+            followScroll();
+        }
+      }, 1000);
 		}
 	});
 }
 //label view next
 function load_next_label_docs(url, labelName, lastSeenIndex, numDocsPerPage){
-	nextPrevClickTime = new Date().getTime() / 1000;
+	nextPrevClickTime = Date.now() / 1000;
 	firstIndex = lastSeenIndex - numDocsPerPage+1;
 	var currMin = mainWindow.minute;
 	var currSec = mainWindow.second;
@@ -300,7 +288,7 @@ function load_next_label_docs(url, labelName, lastSeenIndex, numDocsPerPage){
 
 //label view prev
 function load_prev_label_docs(url, labelName, firstSeenIndex, numDocsPerPage){
-	nextPrevClickTime = new Date().getTime() / 1000;
+	nextPrevClickTime = Date.now() / 1000;
 	var currMin = mainWindow.minute;
 	var currSec = mainWindow.second;
 	next_prev = true;
@@ -568,7 +556,7 @@ function load_doc(url, docid, topicid, numDisplayDocs, newWindow) {
 		newWindow.focus();
 	}
 	$(newWindow).on("beforeunload", function(){
-		var closeTime = new Date().getTime() / 1000;
+		var closeTime = Date.now() / 1000;
 		var currMin = mainWindow.minute;
 		var currSec = mainWindow.second;
 		addCloseCrossNormalDocLogs(closeTime, docid_wo_topicid, currMin, currSec);
@@ -610,8 +598,7 @@ function canRunClassifier(localDocLabelMap){
 
 
 //added by yuening
-function count_down(){
-
+function startTimer(){
 	if (second == 0) {
 		second = 60;
 		minute = minute - 1;
@@ -621,7 +608,6 @@ function count_down(){
 
 	if (minute >= 0) {
 		$('#timing').text(`Time left: ${minute}:${second}`);
-		setTimeout('count_down()', 1000);
 	}
 
 	if (minute == 5 && second == 0) {
@@ -646,7 +632,7 @@ function count_down(){
 	}
 }
 function finishLabeling(){
-	var clickTime = new Date().getTime() / 1000;
+	var clickTime = Date.now() / 1000;
 	var currMin = mainWindow.minute;
 	var currSec = mainWindow.second;
 	mainWindow.logStr += "alert Thanks for participating="+clickTime+",min="+currMin+",sec="+currSec+"%0A";
