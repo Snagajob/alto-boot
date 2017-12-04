@@ -16,6 +16,9 @@
           position: relative;
           top: 56px;
       }
+      .card-subtitle {
+        margin-bottom: 10px;
+      }
     </style>
 
     <script th:inline="javascript">
@@ -45,6 +48,7 @@
             <h6 th:id="${'subtitle-' + document.id}" class="card-subtitle">
               <span class="badge badge-pill label"></span>
             </h6>
+            <h6 th:id="${'subtitle-' + document.id + '-confidence'}" class="card-subtitle mb-2 text-muted"></h6>
             <p class="card-text mt-2" th:utext="${document.text}"></p>
           </div>
           <div class="card-body">
