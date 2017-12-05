@@ -121,15 +121,14 @@ function addLabelName(labelName) {
   }
 
   labelSet[labelName] = true;
-  const labels = Object.keys(labelSet);
-
-	allLabelDocMap[labelName] = [];
-	localAllLabelDocMap[labelName] = [];
+  const labels = Object.keys(labelSet); 
+  allLabelDocMap[labelName] = [];
+  localAllLabelDocMap[labelName] = [];
   labelToColor[labelName] = colors[labels.length];
   colors.splice(labels.length, 1);
 
   insertLabels(labelSet);
-	enableEditDel();
+  enableEditDel();
 }
 
 function insertLabels(labelSet) {
