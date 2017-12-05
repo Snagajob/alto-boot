@@ -28,6 +28,7 @@
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
 <link rel="stylesheet" href="static/css/main.css">
 
+
 <script type="text/javascript"
 	src="static/libs/bootstrap/js/bootstrap-modal.js"></script>
 <script type="text/javascript"
@@ -67,6 +68,8 @@
 	var topic_doc_show_num = 20;
 	var num_baseline_docs = topic_doc_show_num * Number(topicsnum);
 
+	var newsession = "true";
+
 	// added by yuening
 	var topicwords = {};
 
@@ -84,13 +87,11 @@
 				loadInput(username, study_condition);
                                 loadDefaultLabels();
 			});
-
 </script>
 </head>
 
 
-<body >
-
+<body>
 <nav class="navbar navbar-dark bg-dark fixed-top">
 	<span class="navbar-brand mb-0 h1">Interactive Document Labeling</span>
 	<form class="form-inline my-2 my-lg-0">
@@ -161,6 +162,5 @@
 		</div>
 	</div>
 </div>
-
 </body>
 </html>
