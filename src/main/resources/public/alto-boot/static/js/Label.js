@@ -760,6 +760,7 @@ function updateUIDocs(json){
 		mainWindow.addOptDocBorder(mainWindow.optDocId);
 	}
 	mainWindow.updateYellowHighlight();
+        setDocLabelProgressBar();
 }
 function updateYellowHighlight(){
 	var tmp = mainWindow.lastLabeledDocDiv.split("-");
@@ -995,23 +996,35 @@ function checkExists(docId){
 
 }
 
-function setProgressBar() {
+function setDocLabelProgressBar() {
 
     // sets the document labels progess bar
-    var labeledDocs = new Set(Object.keys(docLabelMap));
-    var predDocs = new Set(Object.keys(maxPosteriorLabelProbMap));
+    let labeledDocs = new Set(Object.keys(docLabelMap));
+    let predDocs = new Set(Object.keys(maxPosteriorLabelProbMap));
     labeledDocs.forEach(function(docId){predDocs.delete(docId)});
     let docCount = mainWindow.docs.length;
     let labeledCount = labeledDocs.size;
     let predCount = predDocs.size;
-    let labeledWidth = (labeledDocs.size/docCount)*100;
-    let predWidth = (predDocs.size/docCount)*100;
+    let labeledWidth = (labeledCount/docCount)*100;
+    let predWidth = (predCount/docCount)*100;
+    console.log(docCount, labeledCount, predCount, labeledWidth, predWidth)
 
-    $('#docs-progress-inner-div-labeled').html(`${labeledCount}`);
-    $('#docs-progress-inner-div-labeled').attr('style', `width:${labeledWidth}%`);
-    $('#docs-progress-inner-div-predicted').html(`${predCount}%`);
-    $('#docs-progress-inner-div-predicted').attr('style', `width:${predWidth}%`);
+    if (labeledCount > 0){
+        if (labeledWidth > 10) {
+            $('#docs-progress-inner-div-labeled').html(`${Math.round(labeledWidth)}% labels`);
+        }
+        $('#docs-progress-inner-div-labeled').attr('style', `width:${labeledWidth}%`);
+    }
+    if (predCount > 0){
+        if (predWidth > 10){
+            $('#docs-progress-inner-div-predicted').html(`${Math.round(predWidth)}% preds`);
+        }
+        $('#docs-progress-inner-div-predicted').attr('style', `width:${predWidth}%`);
+    }
 
+}
+
+function setProgressBar() {
 	//sets the progress bar based on labeledTopicsDocs
 	let cnt = 0;
 
