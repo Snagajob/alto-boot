@@ -1002,7 +1002,7 @@ function setDocLabelProgressBar() {
     let labeledDocs = new Set(Object.keys(docLabelMap));
     let predDocs = new Set(Object.keys(maxPosteriorLabelProbMap));
     labeledDocs.forEach(function(docId){predDocs.delete(docId)});
-    let docCount = mainWindow.docs.length;
+    let docCount = mainWindow.all_docs.length;
     let labeledCount = labeledDocs.size;
     let predCount = predDocs.size;
     let labeledWidth = (labeledCount/docCount)*100;
