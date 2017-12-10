@@ -1,6 +1,6 @@
 CORPUS=$1
 BASEDIR=$2
-SAMPLE_IDS_PATH=$3
+WEIGHTED_SAMPLE_IDS_PATH=$3
 NUMTOPICS=$4
 DOWNSAMPLE_SIZE=$5
 MALLET_HOME=$6
@@ -25,8 +25,9 @@ python $BASEDIR/scripts/filter_model_docs.py \
     $BASEDIR/data/$CORPUS/output/T${NUMTOPICS}/init/model.topics \
     $BASEDIR/data/${CORPUS}_sample_${NUMTOPICS}/output/T${NUMTOPICS}/init/model.topics &
 
-python $BASEDIR/scripts/downsample_by_topics.py \
+python $BASEDIR/scripts/downsample_by_topics_weighted.py \
     $BASEDIR/data/$CORPUS/output/T${NUMTOPICS}/init/model.docs \
+    $WEIGHTED_SAMPLE_IDS_PATH \
     ${INPUTPATH}/posting_ids.pkl $DOWNSAMPLE_SIZE
 
 python $BASEDIR/scripts/downsample_model_docs.py \

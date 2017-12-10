@@ -10,6 +10,7 @@ import re
 import signal
 import csv
 from collections import Counter
+import pprint
 
 def worker_init(outpath_in, mongo_host):
     global header_pattern
@@ -78,10 +79,14 @@ def json_to_corpus_text(posting_id):
             )
 
     with open("{}/{}".format(outpath, posting["_id"]), "w") as f:
+        try:
             f.write(scrub(posting["jt"])+"\n\n")
             f.write(scrub(h2t.handle(posting["jd"])))
             f.write("\n\n")
             f.write(scrub(h2t.handle(posting.get("jr",""))))
+        except UnicodeEncodeError:
+            print(pprint.pformat(posting))
+
 
 
 
