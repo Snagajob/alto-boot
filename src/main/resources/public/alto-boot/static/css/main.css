@@ -215,3 +215,11 @@ a:link {
     top: 0;
     width: 100%;
 }
+
+#docs-progress-inner-div-labeled {
+    background-color:#5cb85c;
+}
+
+#docs-progress-inner-div-predicted {
+    background-color:#f0ad4e;
+}
