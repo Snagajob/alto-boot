@@ -2,10 +2,12 @@
 default_labels = [
     "childcare and early education",
     "corporate professional",
+    "information technology professional",
     "admin and paraprofessional",
-    "healthcare professional",
-    "healthcare technical",
-    "healthcare direct care",
+    "health and wellness professional",
+    "health and wellness technical",
+    "health and wellness direct care",
+    "health and wellness home care",
     "industrial warehouse and manufacturing professional",
     "industrial warehouse and manufacturing skilled/technical",
     "industrial warehouse and manufacturing front line",
@@ -21,7 +23,11 @@ default_labels = [
     "corporate sales and marketing professional",
     "direct sales and support",
     "security services",
-    "animal services"
+    "animal services",
+    "automotive services",
+    "beauty and grooming services",
+    "personal instruction and tutoring",
+
 ];
 
 function loadDefaultLabels(){
