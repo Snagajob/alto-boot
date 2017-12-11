@@ -227,7 +227,7 @@ function displayBaselineDocs() {
 	`).appendTo("#mainform_items")
 }
 
-function loadInput(username, study_condition) {
+function loadInput(username, study_condition, loadDefaultLabels) {
 	const endpoint = `${backend}/DataLoader?username=${username}`;
 	//loading different conditions
 	itm_done = false;
@@ -269,6 +269,7 @@ function loadInput(username, study_condition) {
             followScroll();
         }
       }, 1000);
+        loadDefaultLabels();
 		}
 	});
 }

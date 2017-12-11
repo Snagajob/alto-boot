@@ -27,8 +27,15 @@
       function onDetailLoad() {
         var numDisplayDocs = [[${numDisplayDocs}]];
         var labelSetStr = [[${labelSetStr}]];
-
         addDocLabel(numDisplayDocs, false, null, labelSetStr);
+
+        // autocomplete for labels input
+        let options = '';
+        labelSetStr.split(",").forEach(label => options += '<option value="'+label+'" />');
+        document.getElementById('labels-datalist').innerHTML = options;
+        document.getElementById([[${'label-form-' + document.id}]]).setAttribute("list", "labels-datalist");
+
+        setTimeout( function() {$("[[${document.id}]]").scrollTop(0)}, 200 );
         getLoadTime();
       }
     /*]]>*/
@@ -40,52 +47,57 @@
     <span class="navbar-brand mb-0 h1">Interactive Document Labeling</span>
     <span class="navbar-text">Document Detail</span>
   </nav>
-  <div id="container" class="container">
-    <form id="mainForm" name="mainForm">
-      <div style="display:none" id="main" class="main">
-        <div th:id="${document.id}" class="card mt-3 p-3">
-          <div class="card-body">
-            <h6 th:id="${'subtitle-' + document.id}" class="card-subtitle">
-              <span class="badge badge-pill label"></span>
-            </h6>
-            <h6 th:id="${'subtitle-' + document.id + '-confidence'}" class="card-subtitle mb-2 text-muted"></h6>
-            <p class="card-text mt-2" th:utext="${document.text}"></p>
-          </div>
-          <div class="card-body">
-          	<form>
-              <div class="form-row justify-content-between">
-                <div th:id="${'label-container-' + document.id}" class="form-group">
-                  <!--
-                  <select class="custom-select">
-                  		<option selected="">Select Label</option>
-                  		<option value="1">One</option>
-                  		<option value="2">Two</option>
-                  		<option value="3">Three</option>
-                	</select>
-                  -->
-                </div>
-                <div th:id="${'new-label-container-' + document.id}" class="form-group">
-                  <!--
-                  <input type="text" class="form-control" placeholder="New Label" />
-                  -->
-          	    </div>
-                <div th:id="${'label-and-close-' + document.id}" class="form-group">
-                  <!--
-                  <button class="btn btn-primary">Apply Label</button>
-                  -->
-                </div>
-              </div>
-            </form>
-          </div>
-        </div>
 
-        <div th:id="${'close-' + document.id}" class="d-flex mt-3 justify-content-center">
-          <!--
-          <button id="closeButton" class="btn btn-link">Close</button>
-          -->
-        </div>
-      </div>
-    </form>
+  <datalist id="labels-datalist"></datalist>
+
+  <div id="container" class="container">
+      <form id="mainForm" name="mainForm">
+          <div style="display:none" id="main" class="main">
+              <div th:id="${document.id}" class="card mt-3 p-3">
+                  <div class="card-body" id="document-content">
+                      <h6 th:id="${'subtitle-' + document.id}" class="card-subtitle">
+                          <span class="badge badge-pill label"></span>
+                      </h6>
+                      <h6 th:id="${'subtitle-' + document.id + '-confidence'}" class="card-subtitle mb-2 text-muted"></h6>
+                      <p class="card-text mt-2" th:utext="${document.text}"></p>
+                  </div>
+
+                  <div class="card-body">
+                      <form>
+                          <div class="form-row justify-content-between">
+                              <div th:id="${'label-container-' + document.id}" class="form-group">
+                                  <!--
+                                      <select class="custom-select">
+                                      <option selected="">Select Label</option>
+                                      <option value="1">One</option>
+                                      <option value="2">Two</option>
+                                      <option value="3">Three</option>
+                                      </select>
+                                  -->
+                              </div>
+                              <div th:id="${'new-label-container-' + document.id}" class="form-group">
+                                  <!--
+                                      <input type="text" class="form-control" placeholder="New Label" list="labels-datalist"/>
+                                  -->
+                              </div>
+                              <div th:id="${'label-and-close-' + document.id}" class="form-group">
+                                  <!--
+                                      <button class="btn btn-primary">Apply Label</button>
+                                  -->
+                              </div>
+                          </div>
+                      </form>
+                  </div>
+              </div>
+
+              <div th:id="${'close-' + document.id}" class="d-flex mt-3 justify-content-center">
+                  <!--
+                      <button id="closeButton" class="btn btn-link">Close</button>
+                  -->
+              </div>
+          </div>
+      </form>
   </div>
+
 </body>
 </html>

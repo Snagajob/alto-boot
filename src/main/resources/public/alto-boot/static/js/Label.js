@@ -32,14 +32,18 @@ var deleteDocLabel = false;//deleted a document label
 var deletedDocLabelId = null;
 var optTopic = 0;
 var optDocId = "";
-var colors = ["Turquoise","IndianRed","Orchid","PaleTurquoise","ForestGreen","LightSalmon","PowderBlue","Thistle","SkyBlue","GoldenRod"
+var colors = ["Turquoise","IndianRed","Orchid","ForestGreen","LightSalmon","PowderBlue","Thistle","SkyBlue","GoldenRod"
               ,"LimeGreen","Tomato","FireBrick","DodgerBlue","Orange","Brown","DarkSeaGreen","BlueViolet","DarkSlateBlue","YellowGreen","Red",
               "Salmon","CadetBlue","MediumAquaMarine","DarkTurquoise","RoyalBlue","Crimson","DarkRed","Khaki","LightPink","Aquamarine","Tan",
               "MidnightBlue","MediumOrchid","HotPink","Violet","Chocolate","DarkGoldenRod","Blue","DarkGreen","SandyBrown","DeepPink",
               "Magenta","Lime","SlateBlue","Olive","Darkorange","DarkCyan","LightCoral","MediumPurple","DarkViolet","Maroon","SteelBlue"
-              ,"LightSteelBlue","SaddleBrown","Aqua","Indigo","Plum","Coral","Peru","CornflowerBlue","DeepSkyBlue","Sienna",
+              ,"LightSteelBlue","SaddleBrown","Indigo","Plum","Coral","Peru","CornflowerBlue","DeepSkyBlue","Sienna",
               "DarkSalmon","GreenYellow","Fuchsia","LawnGreen","MediumVioletRed","OrangeRed","RosyBrown","PaleVioletRed","Purple",
               "DarkMagenta","MistyRose","Gold"];
+
+/* Colors I've removed from above because they hurt mine eyes
+var removedColors = ["Aqua", "PaleTurquoise"]
+*/
 
 function fillDocToIndexMap(){
 	cnt = 0;
@@ -121,28 +125,30 @@ function addLabelName(labelName) {
   }
 
   labelSet[labelName] = true;
-  const labels = Object.keys(labelSet);
-
-	allLabelDocMap[labelName] = [];
-	localAllLabelDocMap[labelName] = [];
+  const labels = Object.keys(labelSet); 
+  allLabelDocMap[labelName] = [];
+  localAllLabelDocMap[labelName] = [];
   labelToColor[labelName] = colors[labels.length];
   colors.splice(labels.length, 1);
 
   insertLabels(labelSet);
-	enableEditDel();
+  enableEditDel();
 }
 
 function insertLabels(labelSet) {
   const url = `${backend}/DisplayData`;
   const labels = Object.keys(labelSet);
   let radioStr = '';
+  //let options = '';
 
   if (labels.length > 0) {
     sortedLabelSet = labels.sort();
     sortedLabelSet.forEach(label => radioStr += createLabelTemplate(label, url, numDocsPerPage, labelToColor[label]));
+    //sortedLabelSet.forEach(label => options += '<option value="'+label+'" />';
   }
 
   $('#label-display').html(radioStr);
+  //$('#label-datalist').innerHTML(options);
 }
 
 function createLabelTemplate(label, url, numDocsPerPage, color) {
@@ -761,6 +767,7 @@ function updateUIDocs(json){
 		mainWindow.addOptDocBorder(mainWindow.optDocId);
 	}
 	mainWindow.updateYellowHighlight();
+        setDocLabelProgressBar();
 }
 function updateYellowHighlight(){
 	var tmp = mainWindow.lastLabeledDocDiv.split("-");
@@ -993,6 +1000,34 @@ function checkExists(docId){
 			return true;
 		return false;
 	}
+
+}
+
+function setDocLabelProgressBar() {
+
+    // sets the document labels progess bar
+    let labeledDocs = new Set(Object.keys(docLabelMap));
+    let predDocs = new Set(Object.keys(maxPosteriorLabelProbMap));
+    labeledDocs.forEach(function(docId){predDocs.delete(docId)});
+    let docCount = mainWindow.all_docs.length;
+    let labeledCount = labeledDocs.size;
+    let predCount = predDocs.size;
+    let labeledWidth = (labeledCount/docCount)*100;
+    let predWidth = (predCount/docCount)*100;
+    console.log(docCount, labeledCount, predCount, labeledWidth, predWidth)
+
+    if (labeledCount > 0){
+        if (labeledWidth > 10) {
+            $('#docs-progress-inner-div-labeled').html(`${Math.round(labeledWidth)}% labels`);
+        }
+        $('#docs-progress-inner-div-labeled').attr('style', `width:${labeledWidth}%`);
+    }
+    if (predCount > 0){
+        if (predWidth > 10){
+            $('#docs-progress-inner-div-predicted').html(`${Math.round(predWidth)}% preds`);
+        }
+        $('#docs-progress-inner-div-predicted').attr('style', `width:${predWidth}%`);
+    }
 
 }
 
