@@ -32,14 +32,18 @@ var deleteDocLabel = false;//deleted a document label
 var deletedDocLabelId = null;
 var optTopic = 0;
 var optDocId = "";
-var colors = ["Turquoise","IndianRed","Orchid","PaleTurquoise","ForestGreen","LightSalmon","PowderBlue","Thistle","SkyBlue","GoldenRod"
+var colors = ["Turquoise","IndianRed","Orchid","ForestGreen","LightSalmon","PowderBlue","Thistle","SkyBlue","GoldenRod"
               ,"LimeGreen","Tomato","FireBrick","DodgerBlue","Orange","Brown","DarkSeaGreen","BlueViolet","DarkSlateBlue","YellowGreen","Red",
               "Salmon","CadetBlue","MediumAquaMarine","DarkTurquoise","RoyalBlue","Crimson","DarkRed","Khaki","LightPink","Aquamarine","Tan",
               "MidnightBlue","MediumOrchid","HotPink","Violet","Chocolate","DarkGoldenRod","Blue","DarkGreen","SandyBrown","DeepPink",
               "Magenta","Lime","SlateBlue","Olive","Darkorange","DarkCyan","LightCoral","MediumPurple","DarkViolet","Maroon","SteelBlue"
-              ,"LightSteelBlue","SaddleBrown","Aqua","Indigo","Plum","Coral","Peru","CornflowerBlue","DeepSkyBlue","Sienna",
+              ,"LightSteelBlue","SaddleBrown","Indigo","Plum","Coral","Peru","CornflowerBlue","DeepSkyBlue","Sienna",
               "DarkSalmon","GreenYellow","Fuchsia","LawnGreen","MediumVioletRed","OrangeRed","RosyBrown","PaleVioletRed","Purple",
               "DarkMagenta","MistyRose","Gold"];
+
+/* Colors I've removed from above because they hurt mine eyes
+var removedColors = ["Aqua", "PaleTurquoise"]
+*/
 
 function fillDocToIndexMap(){
 	cnt = 0;
@@ -135,13 +139,16 @@ function insertLabels(labelSet) {
   const url = `${backend}/DisplayData`;
   const labels = Object.keys(labelSet);
   let radioStr = '';
+  //let options = '';
 
   if (labels.length > 0) {
     sortedLabelSet = labels.sort();
     sortedLabelSet.forEach(label => radioStr += createLabelTemplate(label, url, numDocsPerPage, labelToColor[label]));
+    //sortedLabelSet.forEach(label => options += '<option value="'+label+'" />';
   }
 
   $('#label-display').html(radioStr);
+  //$('#label-datalist').innerHTML(options);
 }
 
 function createLabelTemplate(label, url, numDocsPerPage, color) {
