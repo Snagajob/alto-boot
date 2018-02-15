@@ -49,6 +49,7 @@ def scrub(text):
     text = re.sub(header_pattern, "\n\n", text)
     text = re.sub(newline_pattern, "\n\n", text)
     text = text.strip()
+    text = text.encode("utf-8", errors="ignore").decode("utf-8")
     return text
 
 
@@ -81,11 +82,15 @@ def json_to_corpus_text(posting_id):
     with open("{}/{}".format(outpath, posting["_id"]), "w") as f:
         try:
             f.write(scrub(posting["jt"])+"\n\n")
-            f.write(scrub(h2t.handle(posting["jd"])))
+            f.write(scrub(h2t.handle(posting.get("jd",""))))
             f.write("\n\n")
             f.write(scrub(h2t.handle(posting.get("jr",""))))
         except UnicodeEncodeError:
             print(pprint.pformat(posting))
+            f.write("")
+        except:
+            f.write("")
+            
 
 
 
