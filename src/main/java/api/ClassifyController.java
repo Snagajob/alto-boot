@@ -120,8 +120,11 @@ public class ClassifyController {
         getTestingDocIds(TopicModeling.features, idToLabelMap, testingIdList);//fill testingIdList
         int numLabeledTotal = idToLabelMap.keySet().size();
 
-        HashMap<String, ArrayList<String>> topIds = new HashMap<String, ArrayList<String>>();//maps a topic to its top displayed ids except user labeled ones
-        HashMap<String, HashMap<String, Double>> docIdToUncertainty = new HashMap<String, HashMap<String, Double>>();//topic index to a map of id to uncertainty for logging
+        //maps a topic to its top displayed ids except user labeled ones
+        HashMap<String, ArrayList<String>> topIds = new HashMap<String, ArrayList<String>>();
+
+        //topic index to a map of id to uncertainty for logging
+        HashMap<String, HashMap<String, Double>> docIdToUncertainty = new HashMap<String, HashMap<String, Double>>();
         String loggingMode = "";
 
         editDeleteUpdate(trainingLabelSet, editALabel, editedPrevLabel, editedNewLabel, deleteALabel, deletedLabel);
@@ -129,7 +132,8 @@ public class ClassifyController {
         if(AL){//write top ids in json string
             //update topLabelDocuments and allTopLabelDocuments if delete/edit a label
             w.init(TopicModeling.features, idToLabelMap, labelStrToInt, testingIdList,
-                    updateTestingIdToLabel, updateTestingIdToProbs, corpusName, numTopics, isFromScratch, AL, isFirstTime, trainingLabelSet, req);
+                    updateTestingIdToLabel, updateTestingIdToProbs, numTopics,
+                    isFromScratch, isFirstTime, trainingLabelSet, userName, req);
             if(deletedDocLabel){
                 if(testingIdToLabel != null){
                     if(testingIdToLabel.containsKey(deletedDocLabelId)){
@@ -141,7 +145,8 @@ public class ClassifyController {
 
             String json = "";
             //decide top ids based on new testingIdToLabel and testingIdToProbs
-            String topIdsJson = getMostUncertainId(docIdToUncertainty, numLabeledTotal, studyCondition, updateTestingIdToProbs,
+            String topIdsJson = getMostUncertainId(docIdToUncertainty, numLabeledTotal,
+                    studyCondition, updateTestingIdToProbs,
                     labeledDocs, topIds, numTopics, labelStrToInt, numBaselineDocs);
             String labelSetJson= generateLabelSetJson(trainingLabelSet);
             json = topIdsJson + labelSetJson;
@@ -169,7 +174,8 @@ public class ClassifyController {
             testingIdToLabel = new HashMap<String, String>();
             testingIdToProbs = new HashMap<String, ArrayList<Double>>();
             w.init(TopicModeling.features, idToLabelMap, labelStrToInt, testingIdList,
-                    testingIdToLabel, testingIdToProbs, corpusName, numTopics, isFromScratch, AL, isFirstTime, trainingLabelSet, req);
+                    testingIdToLabel, testingIdToProbs, numTopics,
+                    isFromScratch, isFirstTime, trainingLabelSet, userName, req);
             loggingMode = "classifier";
             //update topLabelToIds and allTopLabelDocuments
             topLabelToIds = getTopLabelDocuments(testingIdToProbs, labelStrToInt, testingIdToLabel);

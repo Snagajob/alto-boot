@@ -13,18 +13,18 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.*;
 import java.util.*;
 
-//import servlet.LogisticRegression;
 
 @Component
 public class LogisticRegressor  {
 
     @Value("${alto.data.corpus_name:synthetic}")
-    String corpusName;
+    private String corpusName;
 
     @Value("${alto.data.base_dir:/usr/local/alto-boot}")
-    String dataDirectory;
+    private String dataDirectory;
 
-	public void fillTopicLabeledDocs(HashMap<String, Integer> topicLabeledDocs, TreeMap<String , String> idToLabelMap, int numTopics){
+	private void fillTopicLabeledDocs(HashMap<String, Integer> topicLabeledDocs,
+                                      TreeMap<String, String> idToLabelMap, int numTopics){
 		for(int i = 0;i < numTopics; i++){
 			topicLabeledDocs.put(i+"", 0);
 		}
@@ -33,22 +33,22 @@ public class LogisticRegressor  {
 			topicLabeledDocs.put(highestTopic, topicLabeledDocs.get(highestTopic)+1);
 		}
 	}
-	String outputModelFileName = "";
+	private String outputModelFileName = "";
 
     public LogisticRegressor() {
 
     }
 
 	public void init(HashMap<String, HashMap<Integer, Float>> features, TreeMap<String , String> idToLabelMap,
-			HashMap<String, Integer> labelStrToInt, ArrayList<String> testingIdList, 
-			HashMap<String, String> testingIdToLabel, HashMap<String, ArrayList<Double>> idToProbs,
-			String corpusName, int numTopics, boolean isFromScratch, boolean isAL, boolean isFirstTime, Set<String> trainingLabelSet, HttpServletRequest req) throws IOException{			
-		this.outputModelFileName = this.dataDirectory + "/" + this.corpusName + "/output/T" + String.valueOf(numTopics) + "/init/" + this.corpusName + "_model.saved";
+					 HashMap<String, Integer> labelStrToInt, ArrayList<String> testingIdList,
+					 HashMap<String, String> testingIdToLabel, HashMap<String, ArrayList<Double>> idToProbs,
+					 int numTopics, boolean isFromScratch, boolean isFirstTime,
+                     Set<String> trainingLabelSet, String userName, HttpServletRequest req) {
+		this.outputModelFileName = this.dataDirectory + "/" + this.corpusName + "/output/T" +
+				String.valueOf(numTopics) + "/init/" + this.corpusName + "_" + userName + "_model.saved";
 		//create training set
 		int trainingSize = idToLabelMap.keySet().size();
-		int testingSize = testingIdList.size();
-		Vector[] in = new Vector[trainingSize]; 
-		//	Vector[] testingIn = new Vector[testingSize];
+		Vector[] in = new Vector[trainingSize];
 		int[] out = new int[trainingSize];
 		int i = 0;
 		HashMap<String, Integer> topicLabeledDocs = new HashMap<String, Integer>();
@@ -78,14 +78,19 @@ public class LogisticRegressor  {
 		int rollingAverageSize=5;
 		int minEpochs = 100;
 		int blockSize = Math.max(1,out.length / 50);
-		RegressionPrior prior = RegressionPrior.noninformative();
 
-		boolean canUseIncremental = false;
+		boolean canUseIncremental;
 		LogisticRegression hotStart = null;
 		if(!isFirstTime){
-			hotStart = readModel();
-			// if the number of labels are the same in model and current training set, we can use incremental learning
-			canUseIncremental = (hotStart.weightVectors().length == trainingLabelSet.size() - 1);
+		    try {
+                hotStart = readModel();
+                // if the number of labels are the same in model and current training set, we can use incremental learning
+                canUseIncremental = (hotStart.weightVectors().length == trainingLabelSet.size() - 1);
+            } catch (IOException e) {
+		        hotStart = null;
+		        canUseIncremental = false;
+		        e.printStackTrace();
+            }
 		}
 		else{
 			canUseIncremental = false;
@@ -117,8 +122,12 @@ public class LogisticRegressor  {
 					handler, null); 
 			
 		}
-		File outputModelFile = new File(this.outputModelFileName);
-		writeModel(model, outputModelFile);
+		try {
+            File outputModelFile = new File(this.outputModelFileName);
+            writeModel(model, outputModelFile);
+        } catch (IOException e){
+		    e.printStackTrace();
+        }
 		
 		for(String testingId:testingIdList){
 			//featurizing testing ids

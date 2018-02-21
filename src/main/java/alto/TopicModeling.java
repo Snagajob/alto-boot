@@ -6,7 +6,6 @@ import util.*;
 import util.GenerateVocab;
 
 import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
 import java.io.*;
 import java.util.*;
 

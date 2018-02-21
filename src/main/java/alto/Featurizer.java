@@ -15,6 +15,7 @@ import java.util.function.Supplier;
 //bag of words + topics
 
 //@Component
+// TODO: for snagajob datasets, this is currently handled by scripts/featurize.py
 public class Featurizer{
 	
 	public ArrayList<String> ids = new ArrayList<>();
