@@ -14,10 +14,10 @@ $MALLET_HOME/mallet train-topics \
     --num-threads $NUM_THREADS \
     --optimize-interval 10 \
     --optimize-burn-in 200 \
-    --num-icm-iterations 50 \
     --num-iterations 1250 \
     --diagnostics-file $BASEDIR/data/$CORPUS/output/T${NUMTOPICS}/init/model_diagnostics.xml \
     --output-model $BASEDIR/data/$CORPUS/output/T${NUMTOPICS}/init/trained-model.mallet 
+#    --num-icm-iterations 50 \
 
 python $BASEDIR/scripts/convert_model_docs.py \
     $BASEDIR/data/$CORPUS/output/T${NUMTOPICS}/init/model.docs.new \

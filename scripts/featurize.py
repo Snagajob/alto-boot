@@ -46,7 +46,7 @@ def worker_init(mongo_host):
 def get_metadata_features(posting_id):
     posting = client.get_database("posting").get_collection("posting").find_one(
             {"_id":"{}".format(posting_id)},
-            {"bid", "baid":1, "i":1, "cls":1}
+            {"bid":1, "baid":1, "i":1, "cls":1}
             )
     posting_metadata_features = dict()
     posting_metadata_features["brand_id"] = posting.get("bid")
