@@ -44,7 +44,7 @@ public class LogisticRegressor  {
 					 HashMap<String, String> testingIdToLabel, HashMap<String, ArrayList<Double>> idToProbs,
 					 int numTopics, boolean isFromScratch, boolean isFirstTime,
                      Set<String> trainingLabelSet, String userName, HttpServletRequest req) {
-		this.outputModelFileName = this.dataDirectory + "/" + this.corpusName + "/output/T" +
+		String outputModelFileName = this.dataDirectory + "/" + this.corpusName + "/output/T" +
 				String.valueOf(numTopics) + "/init/" + this.corpusName + "_" + userName + "_model.saved";
 		//create training set
 		int trainingSize = idToLabelMap.keySet().size();
@@ -83,7 +83,7 @@ public class LogisticRegressor  {
 		LogisticRegression hotStart = null;
 		if(!isFirstTime){
 		    try {
-                hotStart = readModel();
+                hotStart = readModel(outputModelFileName);
                 // if the number of labels are the same in model and current training set, we can use incremental learning
                 canUseIncremental = (hotStart.weightVectors().length == trainingLabelSet.size() - 1);
             } catch (IOException e) {
@@ -123,8 +123,7 @@ public class LogisticRegressor  {
 			
 		}
 		try {
-            File outputModelFile = new File(this.outputModelFileName);
-            writeModel(model, outputModelFile);
+            writeModel(model, outputModelFileName);
         } catch (IOException e){
 		    e.printStackTrace();
         }
@@ -155,10 +154,10 @@ public class LogisticRegressor  {
 	
 	}
 	
-	public void writeModel(LogisticRegression lr, File outputModelFile)
+	public void writeModel(LogisticRegression lr, String modelFileName)
 			throws IOException {
 
-		FileOutputStream fileOut = new FileOutputStream(outputModelFile);
+		FileOutputStream fileOut = new FileOutputStream(new File(modelFileName));
 		BufferedOutputStream bufOut = new BufferedOutputStream(fileOut);
 		ObjectOutputStream objOut = new ObjectOutputStream(bufOut);
 		lr.compileTo(objOut);
@@ -166,8 +165,8 @@ public class LogisticRegressor  {
 		bufOut.close();
 		fileOut.close();
 	}
-	public LogisticRegression readModel() throws IOException{
-		FileInputStream fin = new FileInputStream(this.outputModelFileName);
+	public LogisticRegression readModel(String modelFileName) throws IOException{
+		FileInputStream fin = new FileInputStream(modelFileName);
 		ObjectInputStream ois = new ObjectInputStream(fin);
 		LogisticRegression lr=null;
 		try {
