@@ -10,3 +10,6 @@ services:
     image: alto-boot:latest
     ports:
       - "8080:8080"        
+    volumes:
+        - ../data:/usr/local/alto-boot/data
+        - ../text_data:/usr/local/alto-boot/text_data
