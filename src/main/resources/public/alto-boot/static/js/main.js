@@ -227,6 +227,31 @@ function displayBaselineDocs() {
 	`).appendTo("#mainform_items")
 }
 
+function loadDefaultLabels(corpusname){
+	const endpoint = `${backend}/Labels?corpusname=${corpusname}`;
+	var output = "";
+	$.ajax({
+		type: "POST",
+		contentType: "application/x-www-form-urlencoded;charset=utf-8",
+		url: endpoint,
+		async: true,
+		data: output,
+		success: function(json) {
+			if (json.hasError){
+				window.alert("error");
+				return;
+			}
+			setInterval(startTimer, 1000);
+			setTimeout(() => {
+			    console.log(json);
+		        for (i=0; i<json.length; i++){
+		            addLabelName(json[i]);
+		        }
+			}, 1000);
+        }
+    });
+}
+
 function loadInput(username, study_condition, loadDefaultLabels) {
 	const endpoint = `${backend}/DataLoader?username=${username}`;
 	//loading different conditions
@@ -269,7 +294,7 @@ function loadInput(username, study_condition, loadDefaultLabels) {
             followScroll();
         }
       }, 1000);
-        loadDefaultLabels();
+        loadDefaultLabels(json.corpusname);
 		}
 	});
 }
