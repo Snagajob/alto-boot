@@ -12,6 +12,8 @@ Java 1.8
 
 Docker
 
+Docker Compose
+
 Lombok Plugin (Intellij or Eclipse)
 
 ## Compiling and Running
@@ -38,9 +40,8 @@ You can choose to run the application with your own JRE, or build using the dock
 
 #### Using docker: 
 
-- build the docker image: `docker build -t alto-boot .` 
-- run the docker image: `docker run -d -p 8080:8080 --name alto-boot alto-boot` 
-
+- build the docker image: `docker build -t alto-boot -f docker/Dockerfile .`
+- run the docker image: `docker-compose -f docker/docker-compose.yml up`
 
 
 - Open your browser: http://localhost:8080/alto-boot
