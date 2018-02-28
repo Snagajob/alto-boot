@@ -1,12 +1,13 @@
 package data;
 
+import java.io.File;
+import java.io.IOException;
 import org.jsoup.Jsoup;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.io.*;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;

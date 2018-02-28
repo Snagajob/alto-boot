@@ -6,7 +6,10 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface LabelRepository extends JpaRepository<Label, Long>{
-    List<Label> findByLabelName(String labelName);
+    List<Label> findByLabelSourceAndCorpus_CorpusId(
+            Label.LabelCreationSource labelSource,
+            int corpusId
+    );
 
     List<Label> findByCorpus_CorpusId(int corpusId);
 

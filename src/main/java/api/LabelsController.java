@@ -3,8 +3,8 @@ package api;
 import com.google.gson.Gson;
 import data.CorpusRepository;
 import data.Label;
-import data.LabelCreationSource;
 import data.LabelRepository;
+import data.UserRepository;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.stream.Collectors;
@@ -34,7 +34,10 @@ public class LabelsController {
     @Autowired
     private CorpusRepository corpusRepository;
 
-    @RequestMapping("Labels")
+    @Autowired
+    private UserRepository userRepository;
+
+    @RequestMapping("defaultLabels")
     public void defaultLabels(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 
         String corpusname = req.getParameter("corpusname");
@@ -44,14 +47,26 @@ public class LabelsController {
         resp.setCharacterEncoding("UTF-8");
 
         String labels = new Gson().toJson(
-                labelRepository.findByCorpus_CorpusId(corpusId).stream()
-                .filter(l -> l.getLabelCreationSource() == LabelCreationSource.DEFAULT)
+                labelRepository.findByLabelSourceAndCorpus_CorpusId(
+                        Label.LabelCreationSource.DEFAULT, corpusId
+                ).stream()
                 .map(Label::getLabelName)
                 .collect(Collectors.toList()));
 
         System.out.println(labels);
         out.print(labels);
         out.flush();
+    }
+
+    @RequestMapping("addLabel")
+    public void addLabel(HttpServletRequest req, HttpServletResponse resp){
+        Label label = new Label(
+                req.getParameter("labelName"),
+                corpusRepository.findByCorpusName(req.getParameter("corpusname")),
+                Label.LabelCreationSource.valueOf(req.getParameter("labelCreationSource")),
+                userRepository.findByUserName(req.getParameter("username"))
+        );
+        labelRepository.save(label);
     }
 
 
