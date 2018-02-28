@@ -7,7 +7,6 @@ import data.LabelCreationSource;
 import data.LabelRepository;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.List;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -44,15 +43,12 @@ public class LabelsController {
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
 
-        List<Label> corpusLabels = labelRepository.findByCorpus_CorpusId(corpusId)
-                .stream()
-                .filter(l -> l.getLabelCreationSource() == LabelCreationSource.DEFAULT)
-                .collect(Collectors.toList());
         String labels = new Gson().toJson(
-                corpusLabels.stream()
-                        .map(Label::getLabelName)
-                        .collect(Collectors.toList())
-        );
+                labelRepository.findByCorpus_CorpusId(corpusId).stream()
+                .filter(l -> l.getLabelCreationSource() == LabelCreationSource.DEFAULT)
+                .map(Label::getLabelName)
+                .collect(Collectors.toList()));
+
         System.out.println(labels);
         out.print(labels);
         out.flush();
