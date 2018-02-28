@@ -6,10 +6,12 @@ services:
       - "5432:5432"
     environment:
       - POSTGRES_DB=alto        
+    volumes:
+        - ../postgres_data:/var/lib/postgresql/data/
   alto:
     image: alto-boot:latest
     ports:
       - "8080:8080"        
     volumes:
-        - ../data:/usr/local/alto-boot/data
-        - ../text_data:/usr/local/alto-boot/text_data
+      - ../data:/usr/local/alto-boot/data
+      - ../text_data:/usr/local/alto-boot/text_data
