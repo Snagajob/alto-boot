@@ -9,4 +9,5 @@ public interface LabelRepository extends JpaRepository<Label, Long>{
     List<Label> findByLabelName(String labelName);
 
     List<Label> findByCorpus_CorpusId(int corpusId);
+
 }

@@ -38,9 +38,3 @@ public class Label implements Serializable {
     private LabelCreationSource labelCreationSource;
 
 }
-
-enum LabelCreationSource {
-    DEFAULT,
-    CREATED,
-    RENAMED
-}

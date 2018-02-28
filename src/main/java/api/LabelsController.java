@@ -3,6 +3,7 @@ package api;
 import com.google.gson.Gson;
 import data.CorpusRepository;
 import data.Label;
+import data.LabelCreationSource;
 import data.LabelRepository;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -43,7 +44,10 @@ public class LabelsController {
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
 
-        List<Label> corpusLabels = labelRepository.findByCorpus_CorpusId(corpusId);
+        List<Label> corpusLabels = labelRepository.findByCorpus_CorpusId(corpusId)
+                .stream()
+                .filter(l -> l.getLabelCreationSource() == LabelCreationSource.DEFAULT)
+                .collect(Collectors.toList());
         String labels = new Gson().toJson(
                 corpusLabels.stream()
                         .map(Label::getLabelName)
