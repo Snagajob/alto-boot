@@ -1,12 +1,12 @@
 package api;
 
 import com.google.gson.Gson;
-import data.CorpusRepository;
-import data.Label;
-import data.LabelRepository;
-import data.UserRepository;
+import data.*;
+
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -15,17 +15,18 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequestMapping("/alto-boot")
 @Configuration
 @Component
-@EnableAutoConfiguration
-@EntityScan("data")
-@EnableJpaRepositories("data")
+//@EnableAutoConfiguration
+//@EntityScan("data")
+//@EnableJpaRepositories("data")
 public class LabelsController {
 
     @Autowired
@@ -37,32 +38,31 @@ public class LabelsController {
     @Autowired
     private UserRepository userRepository;
 
-    @RequestMapping("defaultLabels")
-    public void defaultLabels(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 
-        String corpusname = req.getParameter("corpusname");
-        int corpusId = corpusRepository.findByCorpusName(corpusname).getCorpusId();
-        PrintWriter out = resp.getWriter();
-        resp.setContentType("application/json");
-        resp.setCharacterEncoding("UTF-8");
+    @GetMapping("/{corpus}/labels")
+    @ResponseBody
+    public List<String> getLabels(@PathVariable("corpus") String corpusName,
+                                  @RequestParam(value = "source", defaultValue = "DEFAULT") Label.LabelCreationSource source) throws IOException {
 
-        String labels = new Gson().toJson(
-                labelRepository.findByLabelSourceAndCorpus_CorpusId(
-                        Label.LabelCreationSource.DEFAULT, corpusId
-                ).stream()
-                .map(Label::getLabelName)
-                .collect(Collectors.toList()));
+        Optional<Corpus> corpus = corpusRepository.findByCorpusName(corpusName);
 
-        System.out.println(labels);
-        out.print(labels);
-        out.flush();
+        if(!corpus.isPresent()) {
+            throw new IllegalArgumentException("Requested corpus name is not configured.");
+        }
+
+        int corpusId = corpus.get().getCorpusId();
+
+        return labelRepository.findByLabelSourceAndCorpus_CorpusId(source, corpusId).stream()
+            .map(Label::getLabelName)
+            .collect(Collectors.toList());
     }
 
-    @RequestMapping("addLabel")
+    @RequestMapping(name = "{corpus}/labels", method = RequestMethod.PUT)
     public void addLabel(HttpServletRequest req, HttpServletResponse resp){
+
         Label label = new Label(
                 req.getParameter("labelName"),
-                corpusRepository.findByCorpusName(req.getParameter("corpusname")),
+                corpusRepository.findByCorpusName(req.getParameter("corpusname")).get(),
                 Label.LabelCreationSource.valueOf(req.getParameter("labelCreationSource")),
                 userRepository.findByUserName(req.getParameter("username"))
         );

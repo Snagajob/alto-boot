@@ -228,10 +228,10 @@ function displayBaselineDocs() {
 }
 
 function loadDefaultLabels(corpusname){
-	const endpoint = `${backend}/defaultLabels?corpusname=${corpusname}`;
+	const endpoint = `${backend}/${corpusname}/labels`;
 	var output = "";
 	$.ajax({
-		type: "POST",
+		type: "GET",
 		contentType: "application/x-www-form-urlencoded;charset=utf-8",
 		url: endpoint,
 		async: true,
