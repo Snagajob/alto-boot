@@ -1,32 +1,19 @@
 package api;
 
-import com.google.gson.Gson;
 import data.*;
-
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/alto-boot")
 @Configuration
 @Component
-//@EnableAutoConfiguration
-//@EntityScan("data")
-//@EnableJpaRepositories("data")
 public class LabelsController {
 
     @Autowired
@@ -42,32 +29,62 @@ public class LabelsController {
     @GetMapping("/{corpus}/labels")
     @ResponseBody
     public List<String> getLabels(@PathVariable("corpus") String corpusName,
-                                  @RequestParam(value = "source", defaultValue = "DEFAULT") Label.LabelCreationSource source) throws IOException {
+                                  @RequestParam(value = "source", defaultValue = "DEFAULT") Label.LabelCreationSource source)
+    {
 
-        Optional<Corpus> corpus = corpusRepository.findByCorpusName(corpusName);
+        Corpus corpus = corpusRepository.findByCorpusName(corpusName)
+                .orElseThrow(() -> new IllegalArgumentException("Requested corpus name is not configured."));
 
-        if(!corpus.isPresent()) {
-            throw new IllegalArgumentException("Requested corpus name is not configured.");
-        }
+        int corpusId = corpus.getCorpusId();
 
-        int corpusId = corpus.get().getCorpusId();
-
-        return labelRepository.findByLabelSourceAndCorpus_CorpusId(source, corpusId).stream()
+        return labelRepository.findByLabelSourceAndCorpus(source, corpus).stream()
             .map(Label::getLabelName)
             .collect(Collectors.toList());
     }
 
-    @RequestMapping(name = "{corpus}/labels", method = RequestMethod.PUT)
-    public void addLabel(HttpServletRequest req, HttpServletResponse resp){
+    @GetMapping("/{corpus}/labels/{userName}")
+    @ResponseBody
+    public List<String> getLabelsByUser(@PathVariable("corpus") String corpusName,
+                                        @PathVariable("userName") String userName,
+                                        @RequestParam(value = "source", defaultValue = "DEFAULT") Label.LabelCreationSource source)
+    {
+        User user = getUser(userName);
+        Corpus corpus = getCorpus(corpusName);
+
+        return labelRepository.findByLabelSourceAndCorpusAndUser(source, corpus, user).stream()
+                .map(Label::getLabelName)
+                .collect(Collectors.toList());
+    }
+
+    @PutMapping("{corpus}/labels/{userName}/{labelName}")
+    @ResponseBody
+    public Label addLabel(@PathVariable("corpus") String corpusName,
+                         @PathVariable("userName") String userName,
+                         @PathVariable String labelName,
+                         @RequestParam("source") Label.LabelCreationSource source){
+
+        User user = getUser(userName);
+        Corpus corpus = getCorpus(corpusName);
 
         Label label = new Label(
-                req.getParameter("labelName"),
-                corpusRepository.findByCorpusName(req.getParameter("corpusname")).get(),
-                Label.LabelCreationSource.valueOf(req.getParameter("labelCreationSource")),
-                userRepository.findByUserName(req.getParameter("username"))
+                labelName,
+                corpus,
+                source,
+                user
         );
-        labelRepository.save(label);
+
+        return labelRepository.save(label);
     }
 
 
+    private User getUser(String userName) {
+        return userRepository.findByUserName(userName)
+                .orElseThrow(() -> new IllegalArgumentException("Couldn't find specified user."));
+    }
+
+    private Corpus getCorpus(String corpusName) {
+        return corpusRepository.findByCorpusName(corpusName)
+                .orElseThrow(() -> new IllegalArgumentException("Requested corpus is not configured"));
+
+    }
 }
