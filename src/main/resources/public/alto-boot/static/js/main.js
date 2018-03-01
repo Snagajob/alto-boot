@@ -228,7 +228,7 @@ function displayBaselineDocs() {
 }
 
 function loadDefaultLabels(corpusname){
-	const endpoint = `${backend}/Labels?corpusname=${corpusname}`;
+	const endpoint = `${backend}/defaultLabels?corpusname=${corpusname}`;
 	var output = "";
 	$.ajax({
 		type: "POST",

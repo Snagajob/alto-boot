@@ -7,11 +7,13 @@ services:
     environment:
       - POSTGRES_DB=alto        
     volumes:
-        - ../postgres_data:/var/lib/postgresql/data/
+        - ../postgres_data/data/:/var/lib/postgresql/data/
   alto:
+    depends_on:
+        - "postgres"
     image: alto-boot:latest
     ports:
       - "8080:8080"        
     volumes:
-      - ../data:/usr/local/alto-boot/data
-      - ../text_data:/usr/local/alto-boot/text_data
+      - ../data/:/usr/local/alto-boot/data
+      - ../text_data/:/usr/local/alto-boot/text_data

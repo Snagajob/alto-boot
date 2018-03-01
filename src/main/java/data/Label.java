@@ -13,11 +13,22 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 @Data
+@NoArgsConstructor
+@RequiredArgsConstructor
 @Entity
 @Table(name="labels")
 public class Label implements Serializable {
+
+    public enum LabelCreationSource {
+        DEFAULT,
+        CREATED,
+        RENAMED
+    }
 
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
@@ -25,16 +36,26 @@ public class Label implements Serializable {
     private int labelId;
 
     @NotNull
+    @NonNull
     @Column(name="label_name")
     private String labelName;
 
     @NotNull
+    @NonNull
     @ManyToOne
     @JoinColumn(name="corpus_id")
     private Corpus corpus;
 
+    @NotNull
+    @NonNull
     @Enumerated(EnumType.STRING)
     @Column(name="label_source")
-    private LabelCreationSource labelCreationSource;
+    private LabelCreationSource labelSource;
 
+    // created by
+    @NotNull
+    @NonNull
+    @ManyToOne
+    @JoinColumn(name="user_id")
+    private User user;
 }
