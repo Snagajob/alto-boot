@@ -72,6 +72,7 @@ function disableEnableAddLabel(){
 //----------------------------------------------------------------------------------------
 //Adding a new label
 function addLabel(){
+	//adds a label from the main screen...
 	var seconds = new Date().getTime() / 1000;
 	labelName = document.getElementById("label-form").value;
 	labelName = labelName.toLowerCase().trim();
@@ -93,338 +94,358 @@ function addLabel(){
 	}
 	mainWindow.newLabel = true;
 	addLabelName(labelName);
-	mainWindow.takeLogsInServer();
-	document.getElementById("label-submit-button").disabled = true;
-	document.getElementById("label-form").value = "";
+
+	//persist label name to backend:
+    $.ajax({
+        type: "POST",
+        contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+        url: `${backend}/${corpusname}/labels/${sessionId}/${labelName}`,
+        data: { "source":"CREATED"},
+        success: function(json) {
+            console.log(json);
+        }
+    });
+
+mainWindow.takeLogsInServer();
+document.getElementById("label-submit-button").disabled = true;
+document.getElementById("label-form").value = "";
 }
 
 function validateLabelName(labelName) {
-  const appearTime = new Date().getTime() / 1000;
-  const currMin = mainWindow.minute;
-  const currSec = mainWindow.second;
+const appearTime = new Date().getTime() / 1000;
+const currMin = mainWindow.minute;
+const currSec = mainWindow.second;
 
-  if (labelName.trim() in labelSet || labelName.trim().toLowerCase() in labelSet) {
-    const str = `Label (${labelName.trim().toLowerCase()}) already exists.`;
+if (labelName.trim() in labelSet || labelName.trim().toLowerCase() in labelSet) {
+const str = `Label (${labelName.trim().toLowerCase()}) already exists.`;
 
-    window.alert(str);
-    mainWindow.addAlertLogs(str, appearTime, appearTime, currMin, currSec);
-    throw new Error();
-  } else if (labelName == '') {
-    const str = "A label should have et least one character. Please enter a valid label!";
+window.alert(str);
+mainWindow.addAlertLogs(str, appearTime, appearTime, currMin, currSec);
+throw new Error();
+} else if (labelName == '') {
+const str = "A label should have et least one character. Please enter a valid label!";
 
-    window.alert(str);
-    mainWindow.addAlertLogs(str, appearTime, appearTime, currMin, currSec);
-    throw new Error();
-  }
+window.alert(str);
+mainWindow.addAlertLogs(str, appearTime, appearTime, currMin, currSec);
+throw new Error();
+}
 }
 function addLabelName(labelName) {
-  try {
-    validateLabelName(labelName);
-  } catch(e) {
-    return;
-  }
+try {
+validateLabelName(labelName);
+} catch(e) {
+return;
+}
 
-  labelSet[labelName] = true;
-  const labels = Object.keys(labelSet); 
-  allLabelDocMap[labelName] = [];
-  localAllLabelDocMap[labelName] = [];
-  labelToColor[labelName] = colors[labels.length];
-  colors.splice(labels.length, 1);
+labelSet[labelName] = true;
+const labels = Object.keys(labelSet);
+allLabelDocMap[labelName] = [];
+localAllLabelDocMap[labelName] = [];
+labelToColor[labelName] = colors[labels.length];
+colors.splice(labels.length, 1);
 
-  insertLabels(labelSet);
-  enableEditDel();
+insertLabels(labelSet);
+enableEditDel();
 }
 
 function insertLabels(labelSet) {
-  const url = `${backend}/DisplayData`;
-  const labels = Object.keys(labelSet);
-  let radioStr = '';
-  //let options = '';
+const url = `${backend}/DisplayData`;
+const labels = Object.keys(labelSet);
+let radioStr = '';
+//let options = '';
 
-  if (labels.length > 0) {
-    sortedLabelSet = labels.sort();
-    sortedLabelSet.forEach(label => radioStr += createLabelTemplate(label, url, numDocsPerPage, labelToColor[label]));
-    //sortedLabelSet.forEach(label => options += '<option value="'+label+'" />';
-  }
+if (labels.length > 0) {
+sortedLabelSet = labels.sort();
+sortedLabelSet.forEach(label => radioStr += createLabelTemplate(label, url, numDocsPerPage, labelToColor[label]));
+//sortedLabelSet.forEach(label => options += '<option value="'+label+'" />';
+}
 
-  $('#label-display').html(radioStr);
-  //$('#label-datalist').innerHTML(options);
+$('#label-display').html(radioStr);
+//$('#label-datalist').innerHTML(options);
 }
 
 function createLabelTemplate(label, url, numDocsPerPage, color) {
-  return `
-    <div id="label-div-${label}" class="form-check ellipsify">
-      <label class="form-check-label">
-        <input class="form-check-input" type="radio" name="label-name" value="${label}" checked onchange="enableEditDel()">
-        <a title='${label}' href='#' onclick="load_label_docs('${url}', null, '${label}', 0, ${numDocsPerPage}, false)">
-          <b style="color: ${color};">${label}</b>
-        </a>
-      </label>
-    </div>`;
+return `
+<div id="label-div-${label}" class="form-check ellipsify">
+  <label class="form-check-label">
+    <input class="form-check-input" type="radio" name="label-name" value="${label}" checked onchange="enableEditDel()">
+    <a title='${label}' href='#' onclick="load_label_docs('${url}', null, '${label}', 0, ${numDocsPerPage}, false)">
+      <b style="color: ${color};">${label}</b>
+    </a>
+  </label>
+</div>`;
 }
 //----------------------------------------------------------------------------------------
 //edit and delete a label
 function enableEditDel(){
-	$('#delete-label').removeAttr('disabled');
-	$('#edit-label').removeAttr('disabled');
+$('#delete-label').removeAttr('disabled');
+$('#edit-label').removeAttr('disabled');
 }
 function disableEditDel(){
-	$('#delete-label').attr('disabled', true);
-	$('#edit-label').attr('disabled', true);
+$('#delete-label').attr('disabled', true);
+$('#edit-label').attr('disabled', true);
 }
 function deleteLabel(){
-	//deletes the label from the ui
-	//any doc that has that label will no longer have any label
-	mainWindow.deleteALabel = true;
-	var clickTime = new Date().getTime() / 1000;
-	labelName = $("input:radio[name=label-name]:checked").val();
-	var currMin = mainWindow.minute;
-	var currSec = mainWindow.second;
-	mainWindow.addDeleteLabelLogs(clickTime, labelName, currMin, currSec);
+    //deletes the label from the ui
+    //any doc that has that label will no longer have any label
+    mainWindow.deleteALabel = true;
+    var clickTime = new Date().getTime() / 1000;
+    labelName = $("input:radio[name=label-name]:checked").val();
+    var currMin = mainWindow.minute;
+    var currSec = mainWindow.second;
+    mainWindow.addDeleteLabelLogs(clickTime, labelName, currMin, currSec);
 
-	elem = document.getElementById('label-div-'+labelName);
-	elem.parentNode.removeChild(elem);
-	mainWindow.deletedLabel = labelName;
+    elem = document.getElementById('label-div-'+labelName);
+    elem.parentNode.removeChild(elem);
+    mainWindow.deletedLabel = labelName;
+    $.ajax({
+        type: "DELETE",
+        contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+        url: `${backend}/${corpusname}/labels/${sessionId}/${labelName}`,
+        success: function(json) {
+            console.log(json);
+        }
+    });
+    //update labeledTopicDocs
+    if(mainWindow.global_study_condition === LA_CONDITION || mainWindow.global_study_condition === LR_CONDITION){
+        var i = 0;
+        while(i < Object.keys(mainWindow.baselineLabeledDocs).length){
+            var docId = mainWindow.baselineLabeledDocs[i];
+            var label = mainWindow.docLabelMap[docId];
+            if(label === mainWindow.deletedLabel){
+                var index = baselineLabeledDocs.indexOf(docId);
+                baselineLabeledDocs.splice(index,1);
+                i--;
+            }
+            i++;
+        }
+    }
+    else{
+        for (var i = 0 ; i < mainWindow.topicsnum; i++){
+            var topicIndex = i;
+            //add already labeled docs
+            var labeled = mainWindow.labeledTopicsDocs[""+topicIndex];	//edit color
+            var j = 0;
+            while(j < Object.keys(labeled).length){
+                var labeledDocId = labeled[j];
+                var docLabel = mainWindow.docLabelMap[labeledDocId];
 
-	//update labeledTopicDocs
-	if(mainWindow.global_study_condition === LA_CONDITION || mainWindow.global_study_condition === LR_CONDITION){
-		var i = 0;
-		while(i < Object.keys(mainWindow.baselineLabeledDocs).length){
-			var docId = mainWindow.baselineLabeledDocs[i];
-			var label = mainWindow.docLabelMap[docId];
-			if(label === mainWindow.deletedLabel){
-				var index = baselineLabeledDocs.indexOf(docId);
-				baselineLabeledDocs.splice(index,1);
-				i--;
-			}
-			i++;
-		}
-	}
-	else{
-		for (var i = 0 ; i < mainWindow.topicsnum; i++){
-			var topicIndex = i;
-			//add already labeled docs
-			var labeled = mainWindow.labeledTopicsDocs[""+topicIndex];	//edit color
-			var j = 0;
-			while(j < Object.keys(labeled).length){
-				var labeledDocId = labeled[j];
-				var docLabel = mainWindow.docLabelMap[labeledDocId];
+                if(docLabel === labelName){
+                    var index = labeled.indexOf(labeledDocId);
+                    labeled.splice(index, 1);
+                    j--;
+                }
+                j++;
+            }
+        }
+        mainWindow.setProgressBar();
+    }
 
-				if(docLabel === labelName){
-					var index = labeled.indexOf(labeledDocId);
-					labeled.splice(index, 1);
-					j--;
-				}
-				j++;
-			}
-		}
-		mainWindow.setProgressBar();
-	}
+    $('#label-div-'+labelName).remove();
+    //delete from labelSet
+    for(var label in labelSet) {
+        if(label === labelName) {
+            delete labelSet[label];
+        }
+    }
+    //deleting from docLabelMap
+    for (docId in docLabelMap){
+        docIdWTopic = getDocIdWithTopic(docId);
+        docLabel = docLabelMap[docId];
+        if(docLabel == labelName){
+            deleteUserDocLabel(docId, window);
+        }
 
-	$('#label-div-'+labelName).remove();
-	//delete from labelSet
-	for(var label in labelSet) {
-		if(label === labelName) {
-			delete labelSet[label];
-		}
-	}
-	//deleting from docLabelMap
-	for (docId in docLabelMap){
-		docIdWTopic = getDocIdWithTopic(docId);
-		docLabel = docLabelMap[docId];
-		if(docLabel == labelName){
-			deleteUserDocLabel(docId, window);
-		}
+    }
+    //update classificationDocLabelMap
+    for (docId in classificationDocLabelMap){
+        docLabel = classificationDocLabelMap[docId];
+        if(docLabel == labelName){
+            deleteAutoDocLabel(docId, window);
+        }
+    }
+    //update docLabelProbMap
+    for (docId in docLabelProbMap){
+        dist = docLabelProbMap[docId];
+        delete dist[labelName];
+        docLabelProbMap[docId] = dist;
+    }
+    //update allLabelDocMap
+    delete allLabelDocMap[labelName];
 
-	}
-	//update classificationDocLabelMap
-	for (docId in classificationDocLabelMap){
-		docLabel = classificationDocLabelMap[docId];
-		if(docLabel == labelName){
-			deleteAutoDocLabel(docId, window);
-		}
-	}
-	//update docLabelProbMap
-	for (docId in docLabelProbMap){
-		dist = docLabelProbMap[docId];
-		delete dist[labelName];
-		docLabelProbMap[docId] = dist;
-	}
-	//update allLabelDocMap
-	delete allLabelDocMap[labelName];
-
-	colors.splice(0, 0, labelToColor[labelName]);
-	delete labelToColor[labelName];
-	disableEditDel();
-	if(mainWindow.canRunClassifier(mainWindow.docLabelMap))
-		classifyForAL();
+    colors.splice(0, 0, labelToColor[labelName]);
+    delete labelToColor[labelName];
+    disableEditDel();
+    if(mainWindow.canRunClassifier(mainWindow.docLabelMap))
+        classifyForAL();
 }
+
 function editLabel(){
-	//edits the label in the ui
-	//any doc that has that label will have the new label
-	var clickTime = new Date().getTime() / 1000;
-	labelName = $("input:radio[name=label-name]:checked").val();
+//edits the label in the ui
+//any doc that has that label will have the new label
+var clickTime = new Date().getTime() / 1000;
+labelName = $("input:radio[name=label-name]:checked").val();
 
-	newLabelName = "";
-	var renameTime;
-	while(newLabelName == ""){
-		newLabelName = prompt("Please enter the new label", labelName);
-		newLabelName = newLabelName.trim().toLowerCase();
-		renameTime = new Date().getTime() / 1000;
-		if (newLabelName === null || newLabelName === false)
-			return;
-		if (newLabelName == "" || newLabelName == " "){
-			var currMin = mainWindow.minute;
-			var currSec = mainWindow.second;
-			mainWindow.addRenameCancelLogs(clickTime, labelName, currMin, currSec);
-			return;
-		}
-		if(newLabelName.trim().toLowerCase() in labelSet){
-			var appear = new Date().getTime() / 1000;
-			window.alert("Label \""+newLabelName.trim().toLowerCase()+ "\" already exists. Please choose a new label.");
-			var okTime = new Date().getTime() / 1000;
-			var currMin = mainWindow.minute;
-			var currSec = mainWindow.second;
-			var str = "Label \""+newLabelName.trim().toLowerCase()+ "\" already exists. Please choose a new label.";
-			mainWindow.addAlertLogs(str, appearTime, okTime, currMin, currSec);
-			return;
-		}
-		if (newLabelName.replace(/[\.,?!-\/#!$%\^&\*;:\'{}=\-_`~()]/g, "") != newLabelName) {
-			var currMin = manWindow.minute;
-			var currSec = mainWindow.second;
-			mainWindow.invalidAddLabelLogs(newLabelName, renameTime, currMin, currSec);
-			var appearTime = new Date().getTime() / 1000;
-			window.alert("Labels can only contain letters and digits.");
-			var okTime = new Date().getTime() / 1000;
-			var currMin = mainWindow.minute;
-			var currSec = mainWindow.second;
-			var str = "Labels can only contain letters and digits.";
-			mainWindow.addAlertLogs(str, appearTime, okTime, currMin, currSec);
-			return;
-		}
-	}
-	mainWindow.editALabel = true;
-	mainWindow.editedPrevLabel = labelName;
-	mainWindow.editedNewLabel = newLabelName;
-	var currMin = mainWindow.minute;
-	var currSec = mainWindow.second;
-	mainWindow.addRenameLabelLogs(clickTime, renameTime, labelName, newLabelName, currMin, currSec);
-	mainWindow.takeLogsInServer();
-	//edit allLabelDocMap
-	allLabelDocMap[newLabelName] = [];
-	localAllLabelDocMap[newLabelName] = [];
-	for(j in allLabelDocMap[labelName]){
-		docid = allLabelDocMap[labelName][j];
-		allLabelDocMap[newLabelName].push(docid);
-	}
+newLabelName = "";
+var renameTime;
+while(newLabelName == ""){
+    newLabelName = prompt("Please enter the new label", labelName);
+    newLabelName = newLabelName.trim().toLowerCase();
+    renameTime = new Date().getTime() / 1000;
+    if (newLabelName === null || newLabelName === false)
+        return;
+    if (newLabelName == "" || newLabelName == " "){
+        var currMin = mainWindow.minute;
+        var currSec = mainWindow.second;
+        mainWindow.addRenameCancelLogs(clickTime, labelName, currMin, currSec);
+        return;
+    }
+    if(newLabelName.trim().toLowerCase() in labelSet){
+        var appear = new Date().getTime() / 1000;
+        window.alert("Label \""+newLabelName.trim().toLowerCase()+ "\" already exists. Please choose a new label.");
+        var okTime = new Date().getTime() / 1000;
+        var currMin = mainWindow.minute;
+        var currSec = mainWindow.second;
+        var str = "Label \""+newLabelName.trim().toLowerCase()+ "\" already exists. Please choose a new label.";
+        mainWindow.addAlertLogs(str, appearTime, okTime, currMin, currSec);
+        return;
+    }
+    if (newLabelName.replace(/[\.,?!-\/#!$%\^&\*;:\'{}=\-_`~()]/g, "") != newLabelName) {
+        var currMin = manWindow.minute;
+        var currSec = mainWindow.second;
+        mainWindow.invalidAddLabelLogs(newLabelName, renameTime, currMin, currSec);
+        var appearTime = new Date().getTime() / 1000;
+        window.alert("Labels can only contain letters and digits.");
+        var okTime = new Date().getTime() / 1000;
+        var currMin = mainWindow.minute;
+        var currSec = mainWindow.second;
+        var str = "Labels can only contain letters and digits.";
+        mainWindow.addAlertLogs(str, appearTime, okTime, currMin, currSec);
+        return;
+    }
+}
+mainWindow.editALabel = true;
+mainWindow.editedPrevLabel = labelName;
+mainWindow.editedNewLabel = newLabelName;
+var currMin = mainWindow.minute;
+var currSec = mainWindow.second;
+mainWindow.addRenameLabelLogs(clickTime, renameTime, labelName, newLabelName, currMin, currSec);
+mainWindow.takeLogsInServer();
+//edit allLabelDocMap
+allLabelDocMap[newLabelName] = [];
+localAllLabelDocMap[newLabelName] = [];
+for(j in allLabelDocMap[labelName]){
+    docid = allLabelDocMap[labelName][j];
+    allLabelDocMap[newLabelName].push(docid);
+}
 
-	delete allLabelDocMap[labelName];
-	delete localAllLabelDocMap[labelName];
+delete allLabelDocMap[labelName];
+delete localAllLabelDocMap[labelName];
 
-	//edit labelSet
-	for(var label in labelSet) {
-		if(label == labelName) {
-			delete labelSet[labelName];
-			labelSet[newLabelName] = true;
-		}
-	}
-	//edit color
-	labelToColor[newLabelName] = labelToColor[labelName];
-	var elem = document.getElementById("label-div-"+labelName);
+//edit labelSet
+for(var label in labelSet) {
+    if(label == labelName) {
+        delete labelSet[labelName];
+        labelSet[newLabelName] = true;
+    }
+}
+//edit color
+labelToColor[newLabelName] = labelToColor[labelName];
+var elem = document.getElementById("label-div-"+labelName);
 
-  radioStr = createLabelTemplate(newLabelName, url, numDocsPerPage, labelToColor[newLabelName]);
-	$(elem).replaceWith(radioStr);
+radioStr = createLabelTemplate(newLabelName, url, numDocsPerPage, labelToColor[newLabelName]);
+$(elem).replaceWith(radioStr);
 
-	delete labelToColor[labelName];
+delete labelToColor[labelName];
 
-	//editing from docLabelMap
-	for (docId in docLabelMap){
-		docLabel = docLabelMap[docId];
-		if(docLabel == labelName){
-			docLabelMap[docId] = newLabelName;
-		}
-	}
-	//update classificationDocLabelMap
-	for (docId in classificationDocLabelMap){
-		docLabel = classificationDocLabelMap[docId];
-		if(docLabel == labelName){
-			classificationDocLabelMap[docId] = newLabelName;
-		}
-	}
+//editing from docLabelMap
+for (docId in docLabelMap){
+    docLabel = docLabelMap[docId];
+    if(docLabel == labelName){
+        docLabelMap[docId] = newLabelName;
+    }
+}
+//update classificationDocLabelMap
+for (docId in classificationDocLabelMap){
+    docLabel = classificationDocLabelMap[docId];
+    if(docLabel == labelName){
+        classificationDocLabelMap[docId] = newLabelName;
+    }
+}
 
-	//update docLabelProbMap
-	for (docId in docLabelProbMap){
-		dist = docLabelProbMap[docId];
-		dist[newLabelName] = dist[labelName];
-		delete dist[labelName];
-		docLabelProbMap[docId] = dist;
-	}
-	if(mainWindow.canRunClassifier(mainWindow.docLabelMap))
-		classifyForAL();
+//update docLabelProbMap
+for (docId in docLabelProbMap){
+    dist = docLabelProbMap[docId];
+    dist[newLabelName] = dist[labelName];
+    delete dist[labelName];
+    docLabelProbMap[docId] = dist;
+}
+if(mainWindow.canRunClassifier(mainWindow.docLabelMap))
+    classifyForAL();
 }
 
 
 //----------------------------------------------------------------------------------------
 //Document info
 function fillDocTopics(){
-	//makes a string of docIds to the topics it has
-	if (Object.keys(mainWindow.docToTopicMap).length == 0) {
-		for(var d in all_docs){
-			let docId = all_docs[d]['name'];
-			let highTopics = all_docs[d]['highestTopic'];
+//makes a string of docIds to the topics it has
+if (Object.keys(mainWindow.docToTopicMap).length == 0) {
+    for(var d in all_docs){
+        let docId = all_docs[d]['name'];
+        let highTopics = all_docs[d]['highestTopic'];
 
-      docToTopicMap[docId] = highTopics;
-		}
-	}
+  docToTopicMap[docId] = highTopics;
+    }
+}
 }
 function fillDocToSummaryMap(){
-	if(Object.keys(mainWindow.docToSummaryMap).length == 0){
-		for(var d in all_docs){
-			var docId = all_docs[d]["name"];
-			var summary = all_docs[d]["summary"];
-			mainWindow.docToSummaryMap[docId] = summary;
-		}
-	}
+if(Object.keys(mainWindow.docToSummaryMap).length == 0){
+    for(var d in all_docs){
+        var docId = all_docs[d]["name"];
+        var summary = all_docs[d]["summary"];
+        mainWindow.docToSummaryMap[docId] = summary;
+    }
+}
 }
 //----------------------------------------------------------------------------------------
 //Classify
 function classify(){
-	var runClassifierTime = new Date().getTime() / 1000;
-	if(!canRunClassifier(docLabelMap)){
-		var appearTime = new Date().getTime() / 1000;
-		window.alert("No document labels found. Please label at least two documents!");
-		var okTime = new Date().getTime() / 1000;
-		var currMin = mainWindow.minute;
-		var currSec = mainWindow.second;
-		var str = "No document labels found. Please label at least two documents!";
-		mainWindow.addAlertLogs(str, appearTime, okTime, currMin, currSec);
-		return;
-	}
-	var min = mainWindow.minute;
-	var sec = mainWindow.second;
-	allLabelDocMap={};
-	localAllLabelDocMap = {};
-	classificationDocLabelMap = {};
-	topLabelDocs = {};
-	for (labelName in labelSet){
-		allLabelDocMap[labelName] = [];
-		localAllLabelDocMap[labelName] = [];
-		topLabelDocs[labelName] = [];
-	}
+var runClassifierTime = new Date().getTime() / 1000;
+if(!canRunClassifier(docLabelMap)){
+    var appearTime = new Date().getTime() / 1000;
+    window.alert("No document labels found. Please label at least two documents!");
+    var okTime = new Date().getTime() / 1000;
+    var currMin = mainWindow.minute;
+    var currSec = mainWindow.second;
+    var str = "No document labels found. Please label at least two documents!";
+    mainWindow.addAlertLogs(str, appearTime, okTime, currMin, currSec);
+    return;
+}
+var min = mainWindow.minute;
+var sec = mainWindow.second;
+allLabelDocMap={};
+localAllLabelDocMap = {};
+classificationDocLabelMap = {};
+topLabelDocs = {};
+for (labelName in labelSet){
+    allLabelDocMap[labelName] = [];
+    localAllLabelDocMap[labelName] = [];
+    topLabelDocs[labelName] = [];
+}
 
-	numLabeled = 0;//reset the number of labeled documents
-	mainWindow.hideDocs();
+numLabeled = 0;//reset the number of labeled documents
+mainWindow.hideDocs();
 
-	$('#loading').modal({
-		keyboard: false
-	})
-	$('#loading_words').html("Generating automatic labels and updating documents...");
-	$('#loading').modal('show');
-	$(".modal-backdrop").unbind();
-	var output="";
+$('#loading').modal({
+    keyboard: false
+})
+$('#loading_words').html("Generating automatic labels and updating documents...");
+$('#loading').modal('show');
+$(".modal-backdrop").unbind();
+var output="";
 
 
-	/*prints docid:label s. Needs to be complete*/
+/*prints docid:label s. Needs to be complete*/
 	result = "";
 	for (i in docLabelMap){
 		result += i+":"+docLabelMap[i]+",";

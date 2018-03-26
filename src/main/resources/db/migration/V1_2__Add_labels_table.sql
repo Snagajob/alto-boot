@@ -7,7 +7,7 @@ CREATE TABLE corpora
 CREATE TABLE users
 (
     user_id SERIAL NOT NULL PRIMARY KEY,
-    user_name VARCHAR(50) NOT NULL
+    user_name VARCHAR(50) NOT NULL UNIQUE
 );
 
 -- CREATE TYPE label_creation_source AS ENUM ( 'DEFAULT', 'CREATED', 'RENAMED' );

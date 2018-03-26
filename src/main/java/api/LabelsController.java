@@ -1,13 +1,18 @@
 package api;
 
 import data.*;
+import data.entity.TaggingSession;
+import data.repository.TaggingSessionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import util.Tuple;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Controller
@@ -25,6 +30,9 @@ public class LabelsController {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private TaggingSessionRepository taggingSessionRepository;
+
 
     @GetMapping("/{corpus}/labels")
     @ResponseBody
@@ -33,9 +41,8 @@ public class LabelsController {
     {
 
         Corpus corpus = corpusRepository.findByCorpusName(corpusName)
-                .orElseThrow(() -> new IllegalArgumentException("Requested corpus name is not configured."));
-
-        int corpusId = corpus.getCorpusId();
+                .orElseThrow(() -> new IllegalArgumentException(
+                        String.format("Requested corpus name %s is not configured.", corpusName)));
 
         return labelRepository.findByLabelSourceAndCorpus(source, corpus).stream()
             .map(Label::getLabelName)
@@ -56,24 +63,37 @@ public class LabelsController {
                 .collect(Collectors.toList());
     }
 
-    @PutMapping("{corpus}/labels/{userName}/{labelName}")
+    @PostMapping("{corpus}/labels/{sessionId}/{labelName}")
     @ResponseBody
     public Label addLabel(@PathVariable("corpus") String corpusName,
-                         @PathVariable("userName") String userName,
+                         @PathVariable("sessionId") UUID sessionId,
                          @PathVariable String labelName,
                          @RequestParam("source") Label.LabelCreationSource source){
 
-        User user = getUser(userName);
+        TaggingSession taggingSession = taggingSessionRepository.findBySessionId(sessionId)
+                .orElseThrow(() -> new IllegalArgumentException("Could not find valid session id: " + sessionId.toString()));
+
         Corpus corpus = getCorpus(corpusName);
 
         Label label = new Label(
                 labelName,
                 corpus,
                 source,
-                user
+                taggingSession.getUser(),
+                taggingSession
         );
 
         return labelRepository.save(label);
+    }
+
+    @DeleteMapping("{corpus}/labels/{sessionId}/{labelName}")
+    @ResponseBody
+    public int deleteLabel(@PathVariable("corpus") String corpusName,
+                               @PathVariable("sessionId") UUID sessionId,
+                               @PathVariable String labelName) {
+
+        int res = labelRepository.deleteBySession_SessionIdAndLabelName(sessionId, labelName);
+        return res;
     }
 
 

@@ -337,6 +337,22 @@ function setButton(buttonName){
 	button = buttonName;
 }
 
+function persistLabel(docId) {
+	labelName = $('#label-form-' + docId).val();
+    const endpoint = `${mainWindow.backend}/${mainWindow.corpusname}/labels`;
+    /*$.ajax({
+        type: "POST",
+        contentType: "application/json;charset=utf-8",
+        url: endpoint,
+        async: true,
+        data: { "labelName":labelName },
+        success: function(json) {
+        }
+    });
+    */
+    console.log("TOOD: Persist the label to doc relationship");
+}
+
 function generateLabelSelectTemplate(labelSetStr, id, numDisplayDocs, isLabelDocs) {
 	let optionStr = `<option value=''>No Label</option>`;
 	const currLabels = [];
@@ -424,7 +440,8 @@ function addDocLabel(numDisplayDocs, isLabelDocs, labelName, labelSetStr) {
 					onclick="setButton('applyClose');
 									 addApplyCloseLogs('${node.id}');
 									 resetLastLabelTime();
-									 saveDocLabelMap(${numDisplayDocs}, ${isLabelDocs}, '${node.id}');"
+									 saveDocLabelMap(${numDisplayDocs}, ${isLabelDocs}, '${node.id}');
+									 persistLabel('${node.id}');"
 					disabled
 				>Apply Label</button>`;
 			const approveAndCloseButton = `

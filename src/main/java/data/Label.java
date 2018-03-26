@@ -12,6 +12,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
+
+import data.entity.TaggingSession;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
@@ -58,4 +60,11 @@ public class Label implements Serializable {
     @ManyToOne
     @JoinColumn(name="user_id")
     private User user;
+
+
+    @NotNull
+    @NonNull
+    @ManyToOne
+    @JoinColumn(name="session_id")
+    private TaggingSession session;
 }
