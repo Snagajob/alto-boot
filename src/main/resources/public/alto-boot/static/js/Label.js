@@ -91,6 +91,18 @@ function addLabel(){
 		mainWindow.addAlertLogs(str, appearTime, okTime, currMin, currSec);
 		return;
 	}
+
+    //persist label name to backend:
+    $.ajax({
+        type: "POST",
+        contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+        url: `${backend}/${corpusname}/labels/${sessionId}/${labelName}`,
+        data: {"source": "CREATED"},
+        success: function (json) {
+            console.log(json);
+        }
+    });
+
 	mainWindow.newLabel = true;
 	addLabelName(labelName);
 	mainWindow.takeLogsInServer();
@@ -125,7 +137,7 @@ function addLabelName(labelName) {
   }
 
   labelSet[labelName] = true;
-  const labels = Object.keys(labelSet); 
+  const labels = Object.keys(labelSet);
   allLabelDocMap[labelName] = [];
   localAllLabelDocMap[labelName] = [];
   labelToColor[labelName] = colors[labels.length];
