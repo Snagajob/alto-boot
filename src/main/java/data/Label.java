@@ -54,14 +54,6 @@ public class Label implements Serializable {
     @Column(name="label_source")
     private LabelCreationSource labelSource;
 
-    // created by
-    @NotNull
-    @NonNull
-    @ManyToOne
-    @JoinColumn(name="user_id")
-    private User user;
-
-
     @NotNull
     @NonNull
     @ManyToOne
