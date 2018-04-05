@@ -64,6 +64,27 @@ function addSaveDocLogs(docId, saveTime, currLabel, labelDefiner, labelConfidenc
 		mainWindow.finalEvent = "SAVELABEL:Labelview=True,savetime="+saveTime+",id="+docId+",currlabel="+currLabel+",def="+
 		labelDefiner+",confidence="+labelConfidence+",newlabel="+newLabelStr+",waitTime="+waitTime+",button="+button+",min="+currMin+",sec="+currSec;
 	}
+
+    const endpoint = `${backend}/${corpusname}/documents/${docId}/${sessionId}/labels/${newLabel}`;
+
+	if((labelConfidence == "NONE") || (labelConfidence == "USER")) {
+		labelConfidence = 0.0;
+	}
+
+    $.ajax({
+        type: "POST",
+        contentType: "application/x-www-form-urlencoded;charset=utf-8",
+        url: endpoint,
+        data: { score: labelConfidence} ,
+        success: function(json) {
+            if (json.hasError){
+                window.alert("error");
+                return;
+            }
+
+        }
+    });
+
 	mainWindow.takeLogsInServer();
 }
 function addStartLogs(startSeconds, study_condition){

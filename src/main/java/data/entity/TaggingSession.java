@@ -1,5 +1,8 @@
 package data.entity;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import data.User;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -28,6 +31,8 @@ public class TaggingSession {
     @NonNull
     @Column(name="start_date")
     @Convert(converter = data.converter.TimeConverter.class)
+    //@JsonSerialize(using = ToStringSerializer.class)
+    //@JsonDeserialize(using = LocalDateTimeDeserializer.class)
     private LocalDateTime startDate;
 
     @Column(name="end_date")

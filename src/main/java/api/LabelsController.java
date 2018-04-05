@@ -2,16 +2,16 @@ package api;
 
 import data.*;
 import data.entity.TaggingSession;
+import data.repository.LabelRepository;
 import data.repository.TaggingSessionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import util.Tuple;
 
+import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -49,18 +49,15 @@ public class LabelsController {
             .collect(Collectors.toList());
     }
 
-    @GetMapping("/{corpus}/labels/{userName}")
+    @GetMapping("/{corpus}/{sessionId}/labels")
     @ResponseBody
-    public List<String> getLabelsByUser(@PathVariable("corpus") String corpusName,
-                                        @PathVariable("userName") String userName,
-                                        @RequestParam(value = "source", defaultValue = "DEFAULT") Label.LabelCreationSource source)
-    {
-        User user = getUser(userName);
-        Corpus corpus = getCorpus(corpusName);
+    public List<String> getLabelsBySessionId(@PathVariable("corpus") String corpusName,
+                                             @PathVariable("sessionId") UUID sessionId,
+                                             @RequestParam(value = "source", defaultValue = "CREATED") Label.LabelCreationSource source) {
 
-        return labelRepository.findByLabelSourceAndCorpusAndUser(source, corpus, user).stream()
-                .map(Label::getLabelName)
-                .collect(Collectors.toList());
+        return labelRepository.findByLabelSourceAndSession_SessionIdAndCorpus_CorpusName(source, sessionId, corpusName).stream()
+            .map(l -> l.getLabelName())
+            .collect(Collectors.toList());
     }
 
     @PostMapping("{corpus}/labels/{sessionId}/{labelName}")
@@ -79,7 +76,6 @@ public class LabelsController {
                 labelName,
                 corpus,
                 source,
-                taggingSession.getUser(),
                 taggingSession
         );
 

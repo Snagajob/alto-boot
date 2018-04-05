@@ -229,13 +229,10 @@ function displayBaselineDocs() {
 
 function loadDefaultLabels(corpusname){
 	const endpoint = `${backend}/${corpusname}/labels`;
-	var output = "";
 	$.ajax({
 		type: "GET",
 		contentType: "application/x-www-form-urlencoded;charset=utf-8",
 		url: endpoint,
-		async: true,
-		data: output,
 		success: function(json) {
 			if (json.hasError){
 				window.alert("error");
@@ -248,6 +245,34 @@ function loadDefaultLabels(corpusname){
 		            addLabelName(json[i]);
 		        }
 			}, 1000);
+        }
+    });
+}
+
+function loadUserLabels(corpusname) {
+    const endpoint = `${backend}/${corpusname}/${sessionId}/labels?source=CREATED`;
+
+    $.ajax({
+        type: "GET",
+        url: endpoint,
+        success: function(json) {
+            console.log(json);
+            for (i=0; i<json.length; i++){
+                addLabelName(json[i]);
+            }
+        }
+    });
+}
+
+function loadDocLabels(corpusname) {
+    const endpoint = `${backend}/${corpusname}/documents/${sessionId}/labels`;
+
+    $.ajax({
+        type: "GET",
+        url: endpoint,
+        success: function(json) {
+            console.log(json);
+            docLabelMap = json;
         }
     });
 }
@@ -295,6 +320,8 @@ function loadInput(username, study_condition, loadDefaultLabels) {
         }
       }, 1000);
         loadDefaultLabels(json.corpusname);
+        loadUserLabels(json.corpusname);
+        loadDocLabels(json.corpusname);
 		}
 	});
 }
